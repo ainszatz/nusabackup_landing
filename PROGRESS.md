@@ -2,7 +2,7 @@
 
 - [x] Sesi 0 — Setup & Config
 - [x] Sesi 1 — DB Schema, RLS, Seed, Types
-- [ ] Sesi 2 — Marketing Foundation + Home
+- [x] Sesi 2 — Marketing Foundation + Home
 - [ ] Sesi 3 — Segment + Package Detail + SEO
 - [ ] Sesi 4 — Lead Engine
 - [ ] Sesi 5 — Admin Auth + Dashboard + Leads
@@ -10,6 +10,33 @@
 - [ ] Sesi 7 — CMS Settings + Polish + Docker
 
 ## Catatan / Deviasi / TODO
+
+### Sesi 2 — Marketing Foundation + Home
+
+**Komponen dibuat:**
+- `Navbar.tsx` — sticky scroll-aware, transparent on hero, hamburger mobile menu
+- `Footer.tsx` — dark navy, 4-col grid, socials (Instagram, LinkedIn)
+- `Hero.tsx` — full-bleed navy, dot-grid pattern, radial glow, trust signals, wave bottom
+- `SegmentCard.tsx` — colored accent per slug (umum=blue, pendidikan=emerald, kesehatan=rose)
+- `PackageCard.tsx` — price format IDR (juta shorthand), feature checklist, WA deep-link
+- `ContactInfo.tsx` — WA / email / address dari settings
+
+**Query layer** (`lib/queries/`):
+- `segments.ts` — `getActiveSegments`, `getSegmentBySlug` · cache tag `segments`
+- `packages.ts` — `getFeaturedPackages`, `getPackagesBySegment`, `getPackageBySlug` · cache tag `packages`
+- `settings.ts` — `getPublicSettings`, `getAllSettings` · cache tag `settings`
+- Semua dibungkus `unstable_cache` dari `next/cache`; menggunakan plain `createClient` (bukan SSR) karena `cookies()` tidak bisa dipanggil dalam callback cache
+
+**Home page** (`app/(marketing)/page.tsx`):
+- Hero → Segmen Grid → Featured Packages (`id="paket"`) → Why NusaBackup → CTA block
+- Data diambil paralel dengan `Promise.all`
+
+**Deviasi / catatan:**
+- `PackageCard` menerima `waNumber` sebagai prop (bukan dari context) agar tetap server component
+- Price formatting: amount ≥ 1 juta ditampilkan sebagai "X jt" untuk kompaksi
+- `bg-white/8` di why-section (Tailwind v4 opacity shorthand)
+
+---
 
 ### Sesi 1 — DB Schema, RLS, Seed, Types
 
