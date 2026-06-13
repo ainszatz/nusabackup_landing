@@ -1,10 +1,34 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Hero } from '@/components/marketing/Hero'
 import { SegmentCard } from '@/components/marketing/SegmentCard'
 import { PackageCard } from '@/components/marketing/PackageCard'
+import { JsonLd } from '@/components/marketing/JsonLd'
 import { getActiveSegments } from '@/lib/queries/segments'
 import { getFeaturedPackages } from '@/lib/queries/packages'
 import { getPublicSettings } from '@/lib/queries/settings'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPublicSettings()
+  const title =
+    settings.meta_title ?? 'NusaBackup — Layanan Backup Offsite & Disaster Recovery'
+  const description =
+    settings.meta_description ??
+    'NusaBackup menyediakan layanan backup offsite dan disaster recovery untuk bisnis, pendidikan, dan kesehatan Indonesia.'
+  return {
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: SITE_URL,
+      siteName: 'NusaBackup',
+    },
+  }
+}
 
 export default async function HomePage() {
   const [segments, featuredPackages, settings] = await Promise.all([
@@ -15,8 +39,30 @@ export default async function HomePage() {
 
   const waNumber = settings.wa_number ?? ''
 
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'NusaBackup',
+    url: SITE_URL,
+    description:
+      'Layanan backup offsite & disaster recovery untuk bisnis, pendidikan, dan kesehatan Indonesia.',
+    areaServed: 'Indonesia',
+    ...(settings.email && { email: settings.email }),
+    ...(waNumber && { telephone: `+${waNumber}` }),
+    ...(settings.address && {
+      address: { '@type': 'PostalAddress', streetAddress: settings.address },
+    }),
+    ...(settings.social_instagram && {
+      sameAs: [
+        settings.social_instagram,
+        ...(settings.social_linkedin ? [settings.social_linkedin] : []),
+      ],
+    }),
+  }
+
   return (
     <>
+      <JsonLd data={orgJsonLd} />
       {/* ─── Hero ─── */}
       <Hero settings={settings} />
 

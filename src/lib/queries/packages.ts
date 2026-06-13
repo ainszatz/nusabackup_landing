@@ -48,6 +48,21 @@ export const getPackagesBySegment = unstable_cache(
   { tags: ['packages'] }
 )
 
+export const getAllActivePackages = unstable_cache(
+  async (): Promise<PackageWithDetails[]> => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('packages')
+      .select(PACKAGE_SELECT)
+      .eq('is_active', true)
+      .order('sort_order')
+    if (error) throw new Error(error.message)
+    return (data ?? []) as PackageWithDetails[]
+  },
+  ['all-active-packages'],
+  { tags: ['packages'] }
+)
+
 export const getPackageBySlug = unstable_cache(
   async (segmentSlug: string, packageSlug: string): Promise<PackageWithDetails | null> => {
     const supabase = createPublicClient()
