@@ -4,12 +4,47 @@
 - [x] Sesi 1 — DB Schema, RLS, Seed, Types
 - [x] Sesi 2 — Marketing Foundation + Home
 - [x] Sesi 3 — Segment + Package Detail + SEO
-- [ ] Sesi 4 — Lead Engine
+- [x] Sesi 4 — Lead Engine
 - [ ] Sesi 5 — Admin Auth + Dashboard + Leads
 - [ ] Sesi 6 — CMS Segments + Packages
 - [ ] Sesi 7 — CMS Settings + Polish + Docker
 
 ## Catatan / Deviasi / TODO
+
+### Sesi 4 — Lead Engine
+
+**Server Action** (`actions/leads.ts`):
+1. Honeypot check (`website` field) → fake success if non-empty (no bot tip-off)
+2. Zod validation (`lib/validations/lead.ts`) — Indonesian error messages per field
+3. Rate limit: `lib/rateLimit.ts` — SHA-256 IP hash from `CF-Connecting-IP`, module-level `Map`, max 3/60-min, pruned on every check
+4. Insert via `createAdminClient()` (service-role) — zero anon access invariant preserved
+5. `Promise.allSettled([sendLeadEmail, sendLeadWhatsApp])` — parallel, fail-soft; insert NOT rolled back on notification failure
+
+**Notifications** (both `import 'server-only'`, skip gracefully if env vars unset):
+- `lib/notifications/email.ts` → Resend API via `fetch` — subject: `Lead Baru — {packageName}`, plain-text body with all lead fields + admin URL
+- `lib/notifications/whatsapp.ts` → Fonnte API via `fetch` — `[NusaBackup] Lead baru dari {name} ({org}) untuk paket {pkg}. Cek: {url}`
+
+**Komponen** (custom Tailwind, no shadcn/ui per CLAUDE.md §5):
+- `LeadForm.tsx` (client): `useActionState(submitLead, null)`, honeypot (aria-hidden, tabIndex=-1, pointer-events-none), hidden context fields, error alert, 5 input fields, preferred_channel radio (WA/email), spinner, success state + quick WA link, FR-10 direct WA+email buttons
+- `LeadFormModal.tsx` (client): trigger button + fixed modal overlay, backdrop click / Escape to close, body scroll lock, accessible `role=dialog aria-modal`
+
+**Wiring:**
+- `PackageCard`: "Pesan Sekarang" Link → `<LeadFormModal>` pre-filled with pkg.id/name, segment.id/name
+- `/[segment]/[package]`: kedua "Pesan Sekarang" Link (hero + bottom CTA) → `<LeadFormModal>`
+- `/kontak`: placeholder `#lead-form-mount` → embedded `<LeadForm>` (tidak modal, langsung tampil)
+
+**Deviasi / catatan:**
+- `resend` dan `fonnte` npm packages tidak diinstall — notification via native `fetch` (no extra deps)
+- `preferred_channel` di form menawarkan `whatsapp` | `email` (bukan `form`); `form` tersedia di enum tapi tidak diekspos ke user
+- Kontak page tetap SSG (tidak perlu `useSearchParams`); form standalone tanpa pre-fill paket
+- Rate limiter di `lib/rateLimit.ts` — module-level `Map` persist selama proses Node.js berjalan (sesuai design-spec Docker single container)
+
+**Env vars diperlukan (semua server-only):**
+- `SUPABASE_SERVICE_ROLE_KEY` — insert leads
+- `RESEND_API_KEY` + `ADMIN_NOTIFY_EMAIL` — email notification
+- `FONNTE_TOKEN` + `ADMIN_NOTIFY_WA` — WA notification
+
+---
 
 ### Sesi 3 — Segment + Package Detail + SEO
 
