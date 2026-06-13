@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { getPackageBySlug, getAllActivePackages } from '@/lib/queries/packages'
 import { getPublicSettings } from '@/lib/queries/settings'
 import { JsonLd } from '@/components/marketing/JsonLd'
+import { LeadFormModal } from '@/components/marketing/LeadFormModal'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'
 
@@ -59,11 +60,11 @@ export default async function PackageDetailPage({ params }: Props) {
   if (!pkg) notFound()
 
   const waNumber = settings.wa_number ?? ''
+  const contactEmail = settings.email ?? ''
   const waText = `Halo NusaBackup, saya tertarik dengan paket *${pkg.name}* (${pkg.segment?.name ?? ''}). Boleh saya mendapat informasi lebih lanjut?`
   const waHref = waNumber
     ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`
     : '#'
-  const pesanHref = `/kontak?paket=${encodeURIComponent(pkg.slug)}&segmen=${encodeURIComponent(segSlug)}`
 
   const features = [...(pkg.features ?? [])].sort((a, b) => a.sort_order - b.sort_order)
   const includedCount = features.filter((f) => f.is_included).length
@@ -186,15 +187,16 @@ export default async function PackageDetailPage({ params }: Props) {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href={pesanHref}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-all shadow-lg shadow-brand-600/30 hover:-translate-y-0.5"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                    <path d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  Pesan Sekarang
-                </Link>
+                <LeadFormModal
+                  packageId={pkg.id}
+                  packageName={pkg.name}
+                  segmentId={pkg.segment?.id ?? null}
+                  segmentName={pkg.segment?.name ?? null}
+                  waNumber={waNumber}
+                  contactEmail={contactEmail}
+                  triggerLabel="Pesan Sekarang"
+                  triggerClassName="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-all shadow-lg shadow-brand-600/30 hover:-translate-y-0.5"
+                />
                 {waNumber && (
                   <a
                     href={waHref}
@@ -333,12 +335,16 @@ export default async function PackageDetailPage({ params }: Props) {
             Hubungi tim kami untuk demo gratis dan pertanyaan teknis.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href={pesanHref}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-all shadow-md hover:-translate-y-0.5"
-            >
-              Pesan Sekarang
-            </Link>
+            <LeadFormModal
+              packageId={pkg.id}
+              packageName={pkg.name}
+              segmentId={pkg.segment?.id ?? null}
+              segmentName={pkg.segment?.name ?? null}
+              waNumber={waNumber}
+              contactEmail={contactEmail}
+              triggerLabel="Pesan Sekarang"
+              triggerClassName="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold transition-all shadow-md hover:-translate-y-0.5"
+            />
             <Link
               href={`/${segSlug}`}
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"

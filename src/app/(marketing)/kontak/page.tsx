@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getPublicSettings } from '@/lib/queries/settings'
 import { ContactInfo } from '@/components/marketing/ContactInfo'
+import { LeadForm } from '@/components/marketing/LeadForm'
 
 export const metadata: Metadata = {
   title: 'Hubungi Kami',
@@ -116,7 +117,7 @@ export default async function KontakPage() {
               </div>
             </div>
 
-            {/* ── Lead Form mount point (Session 4) ── */}
+            {/* ── Lead Form ── */}
             <div>
               <h2 className="font-display font-bold text-xl text-navy-900 mb-2">
                 Kirim Pesan
@@ -125,30 +126,11 @@ export default async function KontakPage() {
                 Isi formulir berikut dan tim kami akan menghubungi Anda dalam 1×24 jam.
               </p>
 
-              {/*
-               * SESSION 4 MOUNT POINT — LeadForm
-               * Ganti div di bawah ini dengan komponen <LeadForm /> pada Sesi 4.
-               * Props yang diharapkan: paket & segmen dari URL search params.
-               */}
-              <div
-                id="lead-form-mount"
-                className="flex flex-col items-center justify-center min-h-[360px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center"
-                aria-label="Formulir kontak — segera hadir"
-              >
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-slate-300 mb-4"
-                  aria-hidden
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <p className="text-slate-400 font-medium">Formulir kontak</p>
-                <p className="text-slate-300 text-sm mt-1">Akan tersedia pada Sesi 4</p>
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                <LeadForm
+                  waNumber={settings.wa_number ?? ''}
+                  contactEmail={settings.email ?? ''}
+                />
               </div>
             </div>
           </div>

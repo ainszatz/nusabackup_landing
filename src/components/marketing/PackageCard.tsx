@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import type { PackageWithDetails } from '@/types'
+import { LeadFormModal } from './LeadFormModal'
 
 interface PackageCardProps {
   pkg: PackageWithDetails
@@ -26,7 +26,6 @@ export function PackageCard({ pkg, waNumber }: PackageCardProps) {
   const waHref = waNumber
     ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`
     : '#'
-  const pesanHref = `/kontak?paket=${encodeURIComponent(pkg.slug)}&segmen=${encodeURIComponent(pkg.segment?.slug ?? '')}`
 
   const includedFeatures = (pkg.features ?? [])
     .sort((a, b) => a.sort_order - b.sort_order)
@@ -131,19 +130,19 @@ export function PackageCard({ pkg, waNumber }: PackageCardProps) {
 
         {/* CTAs */}
         <div className="space-y-2.5 mt-auto">
-          <Link
-            href={pesanHref}
-            className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+          <LeadFormModal
+            packageId={pkg.id}
+            packageName={pkg.name}
+            segmentId={pkg.segment?.id ?? null}
+            segmentName={pkg.segment?.name ?? null}
+            waNumber={waNumber}
+            triggerLabel="Pesan Sekarang"
+            triggerClassName={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
               isFeatured
                 ? 'bg-brand-600 hover:bg-brand-700 text-white shadow-md shadow-brand-600/25 hover:-translate-y-0.5'
                 : 'bg-navy-900 hover:bg-navy-800 text-white'
             }`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Pesan Sekarang
-          </Link>
+          />
 
           {waNumber && (
             <a
