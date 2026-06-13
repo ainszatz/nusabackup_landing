@@ -4,6 +4,35 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── NusaBackup Brand Tokens ─────────────────────────────────────────────── */
+@theme {
+  /* Navy palette — hero, footer, dark surfaces */
+  --color-navy-950: #060E1D;
+  --color-navy-900: #0B1E3D;
+  --color-navy-800: #102748;
+  --color-navy-700: #183660;
+
+  /* Brand blue — primary action, links */
+  --color-brand-700: #1540B8;
+  --color-brand-600: #1B4FD8;
+  --color-brand-500: #3B6FF0;
+  --color-brand-50:  #EEF2FF;
+
+  /* Gold — featured badges, accents */
+  --color-gold-600: #B07D0C;
+  --color-gold-500: #CA8A04;
+  --color-gold-100: #FEF3C7;
+  --color-gold-50:  #FFFBEB;
+
+  /* Neutral surface */
+  --color-surface: #F8FAFC;
+
+  /* Typography */
+  --font-display: var(--font-plus-jakarta);
+  --font-body:    var(--font-inter);
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
