@@ -3,13 +3,41 @@
 - [x] Sesi 0 — Setup & Config
 - [x] Sesi 1 — DB Schema, RLS, Seed, Types
 - [x] Sesi 2 — Marketing Foundation + Home
-- [ ] Sesi 3 — Segment + Package Detail + SEO
+- [x] Sesi 3 — Segment + Package Detail + SEO
 - [ ] Sesi 4 — Lead Engine
 - [ ] Sesi 5 — Admin Auth + Dashboard + Leads
 - [ ] Sesi 6 — CMS Segments + Packages
 - [ ] Sesi 7 — CMS Settings + Polish + Docker
 
 ## Catatan / Deviasi / TODO
+
+### Sesi 3 — Segment + Package Detail + SEO
+
+**Halaman dibuat:**
+- `/umum`, `/pendidikan`, `/kesehatan` — segment hero (navy + color accent), breadcrumb, description, full package grid
+- `/[segment]/[package]` — package detail: breadcrumb, price, feature grid 2-col (all features), dual CTA; `generateStaticParams` covers 8 packages
+- `/kontak` — contact info + `#lead-form-mount` placeholder div (clearly marked for Sesi 4)
+
+**SEO:**
+- `generateMetadata` per route → DB `meta_title`/`meta_description` → `site_settings` fallback
+- `title: { absolute: ... }` dipakai untuk DB-sourced titles agar tidak double-suffix dari template layout
+- OG `type: 'website'` + `siteName: 'NusaBackup'` di semua halaman publik
+- JSON-LD: Organization (home), Service (segment pages), Product (package detail)
+- `sitemap.ts`: home + kontak + 3 segmen + 8 paket aktif — resolved dari DB at build time
+- `robots.ts`: allow `/`, disallow `/admin/`
+
+**Komponen baru:**
+- `JsonLd.tsx` — renders `<script type="application/ld+json">` dengan `</script>` escape untuk safety
+- `SegmentPageContent.tsx` — shared server component + `buildSegmentMetadata()` helper (dipakai semua 3 segment pages)
+
+**Query baru:**
+- `getAllActivePackages()` — semua paket aktif dengan segment join, tag `packages` (untuk sitemap + generateStaticParams)
+
+**Deviasi / catatan:**
+- `NEXT_PUBLIC_SITE_URL` digunakan sebagai base URL di sitemap/robots/JSON-LD; fallback ke `https://nusabackup.id`. Perlu diisi di `.env.local` untuk deploy.
+- Package detail JSON-LD menggunakan `@type: Product` (bukan Service) karena lebih sesuai untuk halaman paket harga individual
+
+---
 
 ### Sesi 2 — Marketing Foundation + Home
 
