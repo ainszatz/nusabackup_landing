@@ -7,7 +7,7 @@ const NAV = [
   { href: '/admin/leads', label: 'Leads', icon: Users },
   { href: '/admin/segments', label: 'Segmen', icon: Layers },
   { href: '/admin/packages', label: 'Paket', icon: Package },
-  { href: '/admin/settings', label: 'Pengaturan', icon: Settings, disabled: true },
+  { href: '/admin/settings', label: 'Pengaturan', icon: Settings },
 ]
 
 export function AdminSidebar({ userName }: { userName: string | null }) {
@@ -21,26 +21,16 @@ export function AdminSidebar({ userName }: { userName: string | null }) {
       </div>
 
       <nav className="flex-1 space-y-0.5 p-2">
-        {NAV.map(({ href, label, icon: Icon, disabled }) =>
-          disabled ? (
-            <span
-              key={href}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
-            >
-              <Icon className="size-4" />
-              {label}
-            </span>
-          ) : (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-navy-800 hover:text-white transition-colors"
-            >
-              <Icon className="size-4" />
-              {label}
-            </Link>
-          )
-        )}
+        {NAV.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-navy-800 hover:text-white transition-colors"
+          >
+            <Icon className="size-4" />
+            {label}
+          </Link>
+        ))}
       </nav>
 
       <div className="border-t border-navy-800 p-2">

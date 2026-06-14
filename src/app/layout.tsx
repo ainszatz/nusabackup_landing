@@ -36,6 +36,9 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body bg-white text-slate-900">
+        <a href="#main-content" className="skip-link">
+          Lewati ke konten utama
+        </a>
         {children}
       </body>
     </html>

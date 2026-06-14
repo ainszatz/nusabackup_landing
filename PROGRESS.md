@@ -7,9 +7,48 @@
 - [x] Sesi 4 — Lead Engine
 - [x] Sesi 5 — Admin Auth + Dashboard + Leads
 - [x] Sesi 6 — CMS Segments + Packages
-- [ ] Sesi 7 — CMS Settings + Polish + Docker
+- [x] Sesi 7 — CMS Settings + Polish + Docker  ← **MVP COMPLETE**
 
 ## Catatan / Deviasi / TODO
+
+### Sesi 7 — CMS Settings + Polish + Docker
+
+**File baru / diperbarui:**
+- `src/lib/validations/settings.ts` — Zod schema untuk 9 setting keys
+- `src/actions/settings.ts` — `updateSettings`: verifyStaff + upsert per key + `revalidateTag('settings', 'default')`. Ditandai `import 'server-only'`.
+- `src/app/(admin)/admin/settings/page.tsx` — RSC: baca semua settings via SSR client (force-dynamic)
+- `src/app/(admin)/admin/settings/SettingsForm.tsx` — Client form dengan `useActionState(updateSettings)`; 3 fieldset: kontak publik, notifikasi admin, SEO default
+- `src/components/admin/AdminSidebar.tsx` — Hapus `disabled: true` dari link Settings; hapus dead code conditional branch
+- `src/app/not-found.tsx` — Halaman 404 custom (nav kembali ke beranda)
+- `src/app/(admin)/admin/loading.tsx` — Skeleton loading untuk admin pages
+- `src/app/(marketing)/loading.tsx` — Spinner loading untuk marketing pages
+- `src/app/globals.css` — Tambah `focus-visible` ring (WCAG 2.4.7), `.skip-link`, `prefers-reduced-motion` (WCAG 2.3.3)
+- `src/app/layout.tsx` — Tambah skip-link "Lewati ke konten utama"
+- `src/app/(marketing)/layout.tsx` — `id="main-content"` pada `<main>`
+- `src/app/(admin)/admin/layout.tsx` — `id="main-content"` pada `<main>`
+- `next.config.ts` — Tambah `output: 'standalone'` untuk Docker
+- `Dockerfile` — Multi-stage: deps → builder (bake NEXT_PUBLIC_* via ARG) → runner (node:20-alpine, non-root user nextjs:1001)
+- `docker-compose.yml` — Single `web` service, env_file `.env.production`, port 3000
+- `.env.production.example` — Template env untuk produksi
+- `README.md` — Deploy guide: Docker, Cloudflare Tunnel, first-admin-user SQL
+
+**Security invariants (confirmed):**
+- `import 'server-only'` ada di: `admin.ts`, `notifications/email.ts`, `notifications/whatsapp.ts`, `actions/settings.ts`, `actions/assets.ts`, `lib/server/verify-staff.ts`
+- CSP + security headers sudah ada di `next.config.ts` sejak awal
+- `settings.ts` action: verifyStaff() dipanggil pertama, sebelum mutasi apa pun
+
+**Deviasi / catatan:**
+- `getAllSettings` di queries/settings.ts menggunakan anon client (sudah ada sejak Sesi 2). Settings page admin menggunakan SSR client langsung (force-dynamic) untuk konsistensi — tidak perlu cache karena admin page selalu fresh.
+- Docker build: `NEXT_PUBLIC_*` di-bake ke image via build ARG (Next.js requirement: public vars harus tersedia saat build). Runtime secrets (`SUPABASE_SERVICE_ROLE_KEY` dll.) inject via `.env.production` at runtime.
+- `output: 'standalone'` ditambahkan ke next.config.ts — menghasilkan `server.js` minimal tanpa harus copy seluruh `node_modules` ke container runner.
+
+**TODO pasca-MVP (opsional):**
+- Lighthouse audit manual setelah deploy ke domain nyata (tidak bisa dijalankan dari localhost/docker)
+- Penambahan OG image dinamis per halaman
+- Editor role (schema sudah ada, tapi belum diaktifkan di MVP)
+- Analitik (Plausible/Umami self-hosted)
+
+---
 
 ### Sesi 5 — Admin Auth + Dashboard + Leads
 

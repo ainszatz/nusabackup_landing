@@ -13,7 +13,7 @@ export default async function MarketingLayout({
     <>
       <Navbar />
       <div className="flex flex-col min-h-screen">
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
         <Footer settings={settings} />
       </div>
     </>
