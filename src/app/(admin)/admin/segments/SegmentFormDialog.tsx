@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { startTransition, useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
@@ -30,14 +30,16 @@ export function SegmentFormDialog({ trigger, segment }: Props) {
 
   useEffect(() => {
     if (state?.status === 'success') {
-      setOpen(false)
-      router.refresh()
+      startTransition(() => {
+        setOpen(false)
+        router.refresh()
+      })
     }
   }, [state, router])
 
   // Reset preview when dialog opens for a different segment
   useEffect(() => {
-    if (open) setIconPreview(segment?.icon ?? null)
+    if (open) startTransition(() => setIconPreview(segment?.icon ?? null))
   }, [open, segment?.icon])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {

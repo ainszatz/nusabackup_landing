@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { startTransition, useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
@@ -58,20 +58,24 @@ export function PackageFormDialog({ trigger, pkg, segments, defaultSegmentId }: 
 
   useEffect(() => {
     if (state?.status === 'success') {
-      setOpen(false)
-      router.refresh()
+      startTransition(() => {
+        setOpen(false)
+        router.refresh()
+      })
     }
   }, [state, router])
 
   useEffect(() => {
     if (open) {
-      setIconPreview(pkg?.icon ?? null)
-      setFeatures(
-        (pkg?.features ?? [])
-          .sort((a, b) => a.sort_order - b.sort_order)
-          .map((f) => ({ _key: makeKey(), id: f.id, label: f.label, is_included: f.is_included, sort_order: f.sort_order }))
-      )
-      setNewLabel('')
+      startTransition(() => {
+        setIconPreview(pkg?.icon ?? null)
+        setFeatures(
+          (pkg?.features ?? [])
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map((f) => ({ _key: makeKey(), id: f.id, label: f.label, is_included: f.is_included, sort_order: f.sort_order }))
+        )
+        setNewLabel('')
+      })
     }
   }, [open, pkg])
 

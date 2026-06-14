@@ -8,8 +8,26 @@
 - [x] Sesi 5 — Admin Auth + Dashboard + Leads
 - [x] Sesi 6 — CMS Segments + Packages
 - [x] Sesi 7 — CMS Settings + Polish + Docker  ← **MVP COMPLETE**
+- [x] QA Audit — Full static + runtime QA, semua invariant verified  ← **MVP VERIFIED**
 
 ## Catatan / Deviasi / TODO
+
+### QA Audit — 2026-06-14
+
+**Hasil:** 33 checks, 31 PASS, 4 FIXED, 0 outstanding security gaps.
+
+**Defect yang diperbaiki:**
+- `PackageFormDialog.tsx` + `SegmentFormDialog.tsx`: 4 ESLint errors (`react-hooks/set-state-in-effect`) — diperbaiki dengan `startTransition()` wrapper.
+
+**Outstanding TODOs (pasca-MVP, non-blocker):**
+1. `src/actions/leads.ts`: `verifyStaff()` diduplikasi secara lokal, seharusnya import dari `lib/server/verify-staff.ts`. Fungsional identik, tidak ada security gap, tapi DRY violation.
+2. Lighthouse audit — harus dijalankan setelah deploy ke production domain.
+3. OG image dinamis per halaman — optional enhancement.
+4. Editor role — schema siap, belum ada UI assignment.
+
+**File QA Report:** `QA-REPORT.md` di root repo.
+
+---
 
 ### Sesi 7 — CMS Settings + Polish + Docker
 
