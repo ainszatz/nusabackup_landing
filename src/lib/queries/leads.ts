@@ -44,7 +44,9 @@ export async function getLeadsFiltered({ status, q }: { status?: string; q?: str
     query = query.eq('status', status as LeadStatus)
   }
   if (q && q.trim().length > 0) {
-    query = query.or(`name.ilike.%${q.trim()}%,organization.ilike.%${q.trim()}%`)
+    // Escape PostgREST metacharacters to prevent filter injection
+    const safe = q.trim().replace(/[%_\\,()*]/g, (c) => `\\${c}`)
+    query = query.or(`name.ilike.%${safe}%,organization.ilike.%${safe}%`)
   }
 
   const { data } = await query

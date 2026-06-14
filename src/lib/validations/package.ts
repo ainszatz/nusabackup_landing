@@ -1,2 +1,33 @@
-// TODO: implement in later session
-export {}
+import { z } from 'zod'
+
+export const featureSchema = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().min(1, 'Label fitur tidak boleh kosong').max(200),
+  is_included: z.coerce.boolean().default(true),
+  sort_order: z.coerce.number().int().min(0).default(0),
+})
+
+export const packageSchema = z.object({
+  id: z.string().uuid().optional(),
+  segment_id: z.string().uuid('Segmen wajib dipilih'),
+  slug: z
+    .string()
+    .min(2, 'Slug minimal 2 karakter')
+    .max(50, 'Slug terlalu panjang')
+    .regex(/^[a-z0-9-]+$/, 'Slug hanya boleh huruf kecil, angka, dan tanda hubung'),
+  name: z.string().min(2, 'Nama minimal 2 karakter').max(100),
+  description: z.string().max(2000).optional(),
+  badge_label: z.string().max(50).optional(),
+  is_featured: z.coerce.boolean().default(false),
+  is_active: z.coerce.boolean().default(true),
+  sort_order: z.coerce.number().int().min(0).default(0),
+  price_prefix: z.string().max(50).optional(),
+  price_amount: z.coerce.number().min(0).nullable().optional(),
+  price_period: z.string().max(50).optional(),
+  currency: z.string().max(10).optional(),
+})
+
+export const featuresArraySchema = z.array(featureSchema)
+
+export type PackageFormData = z.infer<typeof packageSchema>
+export type FeatureFormData = z.infer<typeof featureSchema>

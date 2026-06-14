@@ -6,7 +6,7 @@
 - [x] Sesi 3 — Segment + Package Detail + SEO
 - [x] Sesi 4 — Lead Engine
 - [x] Sesi 5 — Admin Auth + Dashboard + Leads
-- [ ] Sesi 6 — CMS Segments + Packages
+- [x] Sesi 6 — CMS Segments + Packages
 - [ ] Sesi 7 — CMS Settings + Polish + Docker
 
 ## Catatan / Deviasi / TODO

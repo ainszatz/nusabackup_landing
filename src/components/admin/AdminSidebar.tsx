@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Layers, Package, Settings } from 'lucide-react'
 import { LogoutButton } from './LogoutButton'
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/leads', label: 'Leads', icon: Users },
+  { href: '/admin/segments', label: 'Segmen', icon: Layers },
+  { href: '/admin/packages', label: 'Paket', icon: Package },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings, disabled: true },
 ]
 

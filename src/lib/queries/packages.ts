@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
+import { createClient as createSsrClient } from '@/lib/supabase/server'
 import type { Database } from '@/types/database'
 import type { PackageWithDetails } from '@/types'
 
@@ -62,6 +63,29 @@ export const getAllActivePackages = unstable_cache(
   ['all-active-packages'],
   { tags: ['packages'] }
 )
+
+// Admin-only: all packages with features, grouped by segment
+export async function getAllPackagesGrouped() {
+  const supabase = await createSsrClient()
+  const [{ data: segments, error: segErr }, { data: packages, error: pkgErr }] = await Promise.all([
+    supabase.from('segments').select('id, name, slug').order('sort_order'),
+    supabase
+      .from('packages')
+      .select('*, features:package_features(id, label, is_included, sort_order)')
+      .order('sort_order'),
+  ])
+  if (segErr) throw new Error(segErr.message)
+  if (pkgErr) throw new Error(pkgErr.message)
+  return (segments ?? []).map((seg) => ({
+    ...seg,
+    packages: (packages ?? [])
+      .filter((p) => p.segment_id === seg.id)
+      .map((p) => ({
+        ...p,
+        features: (p.features ?? []).sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order),
+      })),
+  }))
+}
 
 export const getPackageBySlug = unstable_cache(
   async (segmentSlug: string, packageSlug: string): Promise<PackageWithDetails | null> => {
