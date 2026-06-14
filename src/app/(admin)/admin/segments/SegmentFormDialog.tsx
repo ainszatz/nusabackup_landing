@@ -136,12 +136,12 @@ export function SegmentFormDialog({ trigger, segment }: Props) {
                 id="icon"
                 name="icon"
                 type="file"
-                accept="image/svg+xml,image/png,image/webp,image/jpeg"
+                accept="image/png,image/webp,image/jpeg"
                 onChange={handleFileChange}
                 className="text-sm"
               />
             </div>
-            <p className="text-xs text-slate-500">SVG, PNG, WEBP. Maks 500KB.</p>
+            <p className="text-xs text-slate-500">PNG, WEBP, JPEG. Maks 500KB.</p>
           </div>
 
           {state?.status === 'error' && (
