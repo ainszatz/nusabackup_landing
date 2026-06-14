@@ -14,6 +14,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  if (isLoginPage && user) {
+    const dashboardUrl = request.nextUrl.clone()
+    dashboardUrl.pathname = '/admin'
+    return NextResponse.redirect(dashboardUrl)
+  }
+
   return supabaseResponse
 }
 

@@ -5,11 +5,61 @@
 - [x] Sesi 2 — Marketing Foundation + Home
 - [x] Sesi 3 — Segment + Package Detail + SEO
 - [x] Sesi 4 — Lead Engine
-- [ ] Sesi 5 — Admin Auth + Dashboard + Leads
+- [x] Sesi 5 — Admin Auth + Dashboard + Leads
 - [ ] Sesi 6 — CMS Segments + Packages
 - [ ] Sesi 7 — CMS Settings + Polish + Docker
 
 ## Catatan / Deviasi / TODO
+
+### Sesi 5 — Admin Auth + Dashboard + Leads
+
+**File baru:**
+- `src/actions/auth.ts` — `loginAction` + `logoutAction` (SSR Supabase auth)
+- `src/actions/leads.ts` — tambah `updateLeadStatus` + `addLeadNote` (verify session+role, write lead_activities)
+- `src/lib/leads-config.ts` — `LEAD_STATUSES` constant + `LeadStatus` / `LeadChannel` types (client-safe, tanpa server deps)
+- `src/lib/queries/leads.ts` — `getLeadStatusSummary`, `getRecentLeads`, `getLeadsFiltered`, `getLeadWithActivities`
+- `src/components/admin/AdminSidebar.tsx`, `LeadStatusBadge.tsx`, `LogoutButton.tsx`
+- `src/app/(admin)/admin/login/page.tsx` — email/password form via `useActionState`
+- `src/app/(admin)/admin/layout.tsx` — session + role guard; renders sidebar jika staff, hanya children jika belum login
+- `src/app/(admin)/admin/page.tsx` — dashboard: status summary cards + 10 lead terbaru
+- `src/app/(admin)/admin/leads/page.tsx` — DataTable + URL-based filter (?status=&q=)
+- `src/app/(admin)/admin/leads/[id]/page.tsx` — detail lead + timeline aktivitas
+- `src/app/(admin)/admin/leads/[id]/StatusUpdateForm.tsx` — client component, select + useActionState
+- `src/app/(admin)/admin/leads/[id]/NoteForm.tsx` — client component, textarea + useActionState
+
+**shadcn/ui components ditambah (base-nova style):**
+`table`, `input`, `select`, `label`, `badge`, `textarea`, `card`, `separator`
+
+**proxy.ts diperbarui:**
+Tambah redirect: jika user sudah login dan ke `/admin/login` → redirect ke `/admin`.
+
+**Deviasi / catatan:**
+- `LEAD_STATUSES` dipisah ke `lib/leads-config.ts` (client-safe) agar tidak menyebabkan transitive server import di client components.
+- Status update + note form menggunakan native `<select>` / `<textarea>` HTML (bukan shadcn Select) karena shadcn Select (Base UI) bukan native form element.
+- Activity timeline ditampilkan descending (terbaru di atas).
+- `profiles.full_name` pada aktivitas mungkin `null` jika RLS "read own profile" membatasi join — acceptable untuk MVP single-admin.
+
+**One-off SQL: Membuat admin user pertama**
+
+Jalankan di Supabase SQL Editor setelah deploy:
+
+```sql
+-- 1. Buat user di Supabase Auth (lakukan di Dashboard → Authentication → Users → Invite/Create)
+--    Catat UUID user yang terbentuk.
+
+-- 2. Insert profile dengan role admin:
+INSERT INTO profiles (id, full_name, role)
+VALUES ('<user-uuid-dari-auth>', 'Administrator', 'admin')
+ON CONFLICT (id) DO UPDATE SET role = 'admin', full_name = EXCLUDED.full_name;
+```
+
+Atau via Supabase Auth API (jika `supabase` CLI tersedia):
+```bash
+supabase auth users create --email admin@nusabackup.id --password "ganti-ini" --role authenticated
+```
+Lalu tambahkan row di tabel `profiles` seperti di atas.
+
+---
 
 ### Sesi 4 — Lead Engine
 
