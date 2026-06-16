@@ -67,7 +67,7 @@ export async function upsertSegment(
 
   if (error) return { status: 'error', message: error.message }
 
-  revalidateTag('segments', 'default')
+  revalidateTag('segments')
   return {
     status: 'success',
     message: `Segmen berhasil ${data.id ? 'diperbarui' : 'ditambahkan'}.`,
@@ -90,7 +90,7 @@ export async function deleteSegment(id: string): Promise<AdminActionState> {
 
   if (seg?.icon) await deleteIcon(seg.icon)
 
-  revalidateTag('segments', 'default')
+  revalidateTag('segments')
   return { status: 'success', message: 'Segmen berhasil dihapus.' }
 }
 
@@ -108,7 +108,7 @@ export async function toggleSegmentActive(
     .eq('id', id)
   if (error) return { status: 'error', message: error.message }
 
-  revalidateTag('segments', 'default')
+  revalidateTag('segments')
   return { status: 'success', message: '' }
 }
 

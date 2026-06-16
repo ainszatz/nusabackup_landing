@@ -55,6 +55,6 @@ export async function updateSettings(
     if (error) return { status: 'error', message: error.message }
   }
 
-  revalidateTag('settings', 'default')
+  revalidateTag('settings')
   return { status: 'success', message: 'Pengaturan berhasil disimpan.' }
 }

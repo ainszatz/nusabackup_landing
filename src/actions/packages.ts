@@ -102,7 +102,7 @@ export async function upsertPackage(
     if (featError) return { status: 'error', message: featError.message }
   }
 
-  revalidateTag('packages', 'default')
+  revalidateTag('packages')
   return {
     status: 'success',
     message: `Paket berhasil ${data.id ? 'diperbarui' : 'ditambahkan'}.`,
@@ -125,7 +125,7 @@ export async function deletePackage(id: string): Promise<AdminActionState> {
 
   if (pkg?.icon) await deleteIcon(pkg.icon)
 
-  revalidateTag('packages', 'default')
+  revalidateTag('packages')
   return { status: 'success', message: 'Paket berhasil dihapus.' }
 }
 
@@ -149,7 +149,7 @@ export async function upsertFeature(
 
   if (error) return { status: 'error', message: error.message }
 
-  revalidateTag('packages', 'default')
+  revalidateTag('packages')
   return { status: 'success', message: 'Fitur berhasil disimpan.' }
 }
 
@@ -161,7 +161,7 @@ export async function deleteFeature(id: string): Promise<AdminActionState> {
   const { error } = await supabase.from('package_features').delete().eq('id', id)
   if (error) return { status: 'error', message: error.message }
 
-  revalidateTag('packages', 'default')
+  revalidateTag('packages')
   return { status: 'success', message: 'Fitur berhasil dihapus.' }
 }
 
@@ -176,7 +176,7 @@ export async function togglePackageActive(
   const { error } = await supabase.from('packages').update({ is_active }).eq('id', id)
   if (error) return { status: 'error', message: error.message }
 
-  revalidateTag('packages', 'default')
+  revalidateTag('packages')
   return { status: 'success', message: '' }
 }
 
