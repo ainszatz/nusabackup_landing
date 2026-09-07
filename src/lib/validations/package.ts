@@ -18,7 +18,13 @@ export const packageSchema = z.object({
   name: z.string().min(2, 'Nama minimal 2 karakter').max(100),
   description: z.string().max(2000).optional(),
   badge_label: z.string().max(50).optional(),
-  is_featured: z.coerce.boolean().default(false),
+  // Not z.coerce.boolean(): that calls JS `Boolean(x)`, so the string 'false'
+  // (an unchecked checkbox's fallback value) coerces to `true`. Handle
+  // checked/unchecked/absent explicitly instead.
+  is_featured: z
+    .union([z.boolean(), z.string()])
+    .nullish()
+    .transform((v) => v !== undefined && v !== null && v !== false && v !== 'false'),
   is_active: z.coerce.boolean().default(true),
   sort_order: z.coerce.number().int().min(0).default(0),
   price_prefix: z.string().max(50).optional(),

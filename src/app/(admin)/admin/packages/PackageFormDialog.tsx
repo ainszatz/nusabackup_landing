@@ -225,6 +225,7 @@ export function PackageFormDialog({ trigger, pkg, segments, defaultSegmentId }: 
               id="is_featured"
               name="is_featured"
               value="true"
+              uncheckedValue="false"
               defaultChecked={pkg?.is_featured ?? false}
             />
             <Label htmlFor="is_featured" className="cursor-pointer">Tampilkan sebagai paket unggulan</Label>
