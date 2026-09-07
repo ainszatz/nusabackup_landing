@@ -25,7 +25,14 @@ export const packageSchema = z.object({
     .union([z.boolean(), z.string()])
     .nullish()
     .transform((v) => v !== undefined && v !== null && v !== false && v !== 'false'),
-  is_active: z.coerce.boolean().default(true),
+  // Same z.coerce.boolean() bug as is_featured above, different control:
+  // this comes from a <select> ('true'/'false'), which always sends a
+  // value, but the string 'false' still needs to map to `false`, not
+  // Boolean('false') === true.
+  is_active: z
+    .union([z.boolean(), z.string()])
+    .nullish()
+    .transform((v) => v === undefined || v === null || (v !== false && v !== 'false')),
   sort_order: z.coerce.number().int().min(0).default(0),
   price_prefix: z.string().max(50).optional(),
   price_amount: z.coerce.number().min(0).nullable().optional(),

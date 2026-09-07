@@ -15,7 +15,13 @@ export const segmentSchema = z.object({
   meta_title: z.string().max(70).optional(),
   meta_description: z.string().max(160).optional(),
   sort_order: z.coerce.number().int().min(0).default(0),
-  is_active: z.coerce.boolean().default(true),
+  // Same z.coerce.boolean() bug as package.ts is_featured/is_active:
+  // this comes from a <select> ('true'/'false'), and Boolean('false')
+  // is true in plain JS, so it must be mapped explicitly.
+  is_active: z
+    .union([z.boolean(), z.string()])
+    .nullish()
+    .transform((v) => v === undefined || v === null || (v !== false && v !== 'false')),
 })
 
 export type SegmentFormData = z.infer<typeof segmentSchema>
