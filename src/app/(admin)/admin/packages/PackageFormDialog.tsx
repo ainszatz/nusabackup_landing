@@ -135,7 +135,11 @@ export function PackageFormDialog({ trigger, pkg, segments, defaultSegmentId }: 
           <DialogTitle>{pkg ? 'Edit Paket' : 'Tambah Paket'}</DialogTitle>
         </DialogHeader>
 
-        <form action={action} className="space-y-4 py-1">
+        <form
+          key={`${pkg?.id ?? 'new'}-${pkg?.updated_at ?? ''}`}
+          action={action}
+          className="space-y-4 py-1"
+        >
           {pkg?.id && <input type="hidden" name="id" value={pkg.id} />}
           {pkg?.icon && <input type="hidden" name="existing_icon" value={pkg.icon} />}
           <input type="hidden" name="features" value={featuresJson} />

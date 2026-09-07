@@ -58,7 +58,11 @@ export function SegmentFormDialog({ trigger, segment }: Props) {
           <DialogTitle>{segment ? 'Edit Segmen' : 'Tambah Segmen'}</DialogTitle>
         </DialogHeader>
 
-        <form action={action} className="space-y-4 py-1">
+        <form
+          key={`${segment?.id ?? 'new'}-${segment?.updated_at ?? ''}`}
+          action={action}
+          className="space-y-4 py-1"
+        >
           {segment?.id && <input type="hidden" name="id" value={segment.id} />}
           {segment?.icon && (
             <input type="hidden" name="existing_icon" value={segment.icon} />
