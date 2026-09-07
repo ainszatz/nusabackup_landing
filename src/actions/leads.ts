@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { leadSchema } from '@/lib/validations/lead'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { verifyStaff } from '@/lib/server/verify-staff'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { sendLeadEmail } from '@/lib/notifications/email'
 import { sendLeadWhatsApp } from '@/lib/notifications/whatsapp'
@@ -15,23 +16,6 @@ export type AdminActionState =
   | { status: 'success'; message: string }
   | { status: 'error'; message: string }
   | null
-
-async function verifyStaff() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['admin', 'editor'].includes(profile.role)) return null
-  return { supabase, userId: user.id }
-}
 
 export async function updateLeadStatus(
   _prevState: AdminActionState,
@@ -45,7 +29,8 @@ export async function updateLeadStatus(
   const staff = await verifyStaff()
   if (!staff) return { status: 'error', message: 'Anda tidak memiliki akses.' }
 
-  const { supabase, userId } = staff
+  const { userId } = staff
+  const supabase = await createClient()
 
   const { data: lead } = await supabase
     .from('leads')
@@ -83,7 +68,8 @@ export async function addLeadNote(
   const staff = await verifyStaff()
   if (!staff) return { status: 'error', message: 'Anda tidak memiliki akses.' }
 
-  const { supabase, userId } = staff
+  const { userId } = staff
+  const supabase = await createClient()
 
   const { error } = await supabase.from('lead_activities').insert({
     lead_id: leadId,
