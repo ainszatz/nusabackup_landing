@@ -9,8 +9,28 @@
 - [x] Sesi 6 — CMS Segments + Packages
 - [x] Sesi 7 — CMS Settings + Polish + Docker  ← **MVP COMPLETE**
 - [x] QA Audit — Full static + runtime QA, semua invariant verified  ← **MVP VERIFIED**
+- [x] Post-QA Hardening Pass — security + perf fixes dari database review  ← **HARDENED**
 
 ## Catatan / Deviasi / TODO
+
+### Post-QA Hardening Pass — 2026-09-07
+
+**Selesai:**
+1. Push commit `201a3c9` (cache fix) ke `origin/master`.
+2. **Security:** `ALTER FUNCTION public.is_staff() SET search_path = public, pg_temp;` — migrasi baru `20260907000001_pin_is_staff_search_path.sql`. Menutup celah privilege-escalation via mutable search_path pada fungsi `SECURITY DEFINER`. Grant `EXECUTE` untuk `anon`/`authenticated` TIDAK diubah (tetap diperlukan untuk evaluasi RLS `is_active OR is_staff()` di halaman publik). Diverifikasi: `pg_proc.proconfig` menunjukkan `search_path=public, pg_temp`; halaman publik (`/`, `/umum`) tetap 200 dan menampilkan data setelah migrasi.
+3. **Performance:** index baru untuk FK yang di-flag advisor — migrasi `20260907000002_add_fk_indexes.sql`: `packages(segment_id)`, `package_features(package_id)`, `leads(segment_id)`, `leads(package_id)`, `lead_activities(lead_id)`.
+4. **Bug tak terduga ditemukan saat verifikasi:** commit `201a3c9` (push di langkah 1) menghapus argumen ke-2 `revalidateTag()` karena dikira invalid — ternyata di Next.js 16 terinstall, `revalidateTag(tag, profile)` mewajibkan argumen ke-2 (`string | CacheLifeConfig`), menyebabkan `tsc --noEmit` gagal (9 error di `packages.ts`, `segments.ts`, `settings.ts`). Diperbaiki dengan `revalidateTag(tag, { expire: 0 })` — `expire: 0` mereproduksi perilaku revalidasi penuh & langsung yang sama seperti pemanggilan 1-argumen lama (dikonfirmasi dari source `next/dist/server/web/spec-extension/revalidate.js`), sekaligus valid secara tipe.
+5. **DRY cleanup:** `src/actions/leads.ts` — hapus duplikat lokal `verifyStaff()`, ganti dengan `import { verifyStaff } from '@/lib/server/verify-staff'`. Karena versi shared hanya me-return `{ userId }` (bukan `{ supabase, userId }`), tiap call site sekarang memanggil `createClient()` terpisah setelah `verifyStaff()` — perilaku (session + role check sebelum mutasi) tidak berubah.
+6. **Audit file untracked:** `.agents/skills/supabase/**`, `.claude/skills/supabase/**`, `.mcp.json`, `skills-lock.json`, `docs/superpowers/plans/*.md` — semua diperiksa, tidak ada secret/token/path lokal, aman untuk contributor lain → **di-commit**. `supabase/.temp/cli-latest` adalah cache CLI ephemeral → ditambahkan ke `.gitignore`, tidak di-commit.
+
+**Verifikasi:** `pnpm lint` (clean), `npx tsc --noEmit` (0 error), `pnpm build` (sukses, 8 rute paket SSG ter-prerender), public site end-to-end (`/`, `/umum`, `/kontak` → 200, konten seed tampil).
+
+**Perlu tindakan manual (TIDAK bisa dilakukan otomatis dari sesi ini):**
+- **TODO — Aktifkan "Leaked Password Protection" di Supabase Dashboard:** Authentication → Sign In / Providers → Password → toggle **"Leaked password protection"** (mengecek password terhadap HaveIBeenPwned.org). CLI terautentikasi & linked ke project `nusabackup`, tapi satu-satunya jalur CLI (`supabase config push`) mendorong seluruh `config.toml` sebagai desired-state; karena tidak ada `config.toml` di repo ini, membuat satu dari nol berisiko menimpa setting auth production lain (redirect URLs, email templates, JWT expiry) yang tidak terdokumentasi di mana pun secara lokal — terlalu berisiko untuk dilakukan tanpa review manual. Toggle langsung di dashboard jauh lebih aman untuk perubahan single-setting ini.
+
+**Migrasi baru:**
+- `supabase/migrations/20260907000001_pin_is_staff_search_path.sql`
+- `supabase/migrations/20260907000002_add_fk_indexes.sql`
 
 ### QA Audit — 2026-06-14
 
