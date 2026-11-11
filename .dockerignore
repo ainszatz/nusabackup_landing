@@ -1,0 +1,22 @@
+# Build context hygiene — tanpa ini `node_modules/` (host, glibc) ikut masuk
+# dan menimpa node_modules alpine musl hasil stage deps.
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.agents
+.claude
+.mcp.json
+skills-lock.json
+docs
+supabase
+README.md
+CLAUDE.md
+PROGRESS.md
+QA-REPORT.md
+pnpm-debug.log*
+npm-debug.log*
+.DS_Store

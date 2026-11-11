@@ -49,7 +49,7 @@ pnpm dev                     # http://localhost:3000
 ### 1. Siapkan environment
 
 ```bash
-cp .env.production.example .env.production
+cp .env.example .env.production
 # Edit .env.production dengan nilai produksi
 ```
 
@@ -59,6 +59,9 @@ cp .env.production.example .env.production
 docker compose up -d --build
 # Site berjalan di port 3000
 ```
+
+> `--build` wajib. `docker compose up` tanpa `--build` (atau `restart`) memakai
+> image lama, jadi perubahan kode tidak akan muncul di situs.
 
 ### 3. Cloudflare Tunnel
 
