@@ -13,7 +13,16 @@ export const metadata: Metadata = {
       'Konsultasi gratis backup offsite & disaster recovery. Hubungi via WhatsApp, email, atau isi formulir kontak.',
     type: 'website',
     siteName: 'NusaBackup',
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Hubungi NusaBackup' }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hubungi Kami — NusaBackup',
+    description:
+      'Konsultasi gratis backup offsite & disaster recovery untuk bisnis, pendidikan, dan kesehatan.',
+    images: ['/og.png'],
+  },
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'}/kontak` },
 }
 
 export default async function KontakPage() {
@@ -109,7 +118,7 @@ export default async function KontakPage() {
                     <span>Sabtu</span>
                     <span className="font-medium">09.00 – 14.00 WIB</span>
                   </li>
-                  <li className="flex justify-between text-slate-400">
+                  <li className="flex justify-between text-slate-500">
                     <span>Minggu & Hari Libur</span>
                     <span>Tutup</span>
                   </li>

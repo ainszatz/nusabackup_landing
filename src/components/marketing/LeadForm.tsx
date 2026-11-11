@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
 import { submitLead } from '@/actions/leads'
 import type { SubmitLeadState } from '@/actions/leads'
 
@@ -88,6 +88,36 @@ export function LeadForm({
     submitLead,
     null
   )
+  const formRef = useRef<HTMLFormElement>(null)
+  const snapshotRef = useRef<Record<string, string> | null>(null)
+
+  // React resets uncontrolled fields after a form action resolves. On a
+  // validation error, put the user's input back so nothing is retyped.
+  const snapshot = () => {
+    const form = formRef.current
+    if (!form) return
+    const snapshotData: Record<string, string> = {}
+    for (const [name, value] of new FormData(form).entries()) {
+      if (typeof value === 'string' && name !== 'website') snapshotData[name] = value
+    }
+    snapshotRef.current = snapshotData
+  }
+
+  useEffect(() => {
+    if (state?.status !== 'error') return
+    const form = formRef.current
+    const saved = snapshotRef.current
+    if (!form || !saved) return
+    for (const [name, value] of Object.entries(saved)) {
+      const field = form.elements.namedItem(name)
+      if (field instanceof HTMLInputElement) {
+        if (field.type === 'radio') field.checked = field.value === value
+        else if (field.type !== 'hidden') field.value = value
+      } else if (field instanceof HTMLTextAreaElement) {
+        field.value = value
+      }
+    }
+  }, [state])
 
   if (state?.status === 'success') {
     return (
@@ -106,7 +136,7 @@ export function LeadForm({
   const mailBody = `Halo NusaBackup,\n\nSaya ingin mengetahui lebih lanjut${packageName ? ` tentang paket ${packageName}` : ''}.\n\nNama: \nPerusahaan: \nPesan: `
 
   return (
-    <form action={formAction} noValidate className="space-y-4">
+    <form ref={formRef} onSubmit={snapshot} action={formAction} noValidate className="space-y-4">
       {/* ── Honeypot — visually hidden, aria-hidden, tabIndex -1 ── */}
       <div
         aria-hidden="true"
@@ -205,8 +235,10 @@ export function LeadForm({
           />
         </div>
       </div>
+      <p className="text-xs text-slate-500 -mt-2">
+        Isi minimal salah satu: nomor WhatsApp atau email.
+      </p>
 
-      {/* ── Organization ── */}
       <div>
         <label htmlFor="lead-org" className={labelClass}>
           Instansi / Perusahaan
@@ -290,7 +322,7 @@ export function LeadForm({
       {/* ── FR-10: Direct contact alternatives ── */}
       {(waNumber || contactEmail) && (
         <div className="pt-2 border-t border-slate-100">
-          <p className="text-xs text-slate-400 text-center mb-3">
+          <p className="text-xs text-slate-500 text-center mb-3">
             Atau hubungi langsung:
           </p>
           <div className="flex flex-col sm:flex-row gap-2">

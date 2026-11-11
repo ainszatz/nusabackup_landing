@@ -48,7 +48,7 @@ export function Hero({ settings }: HeroProps) {
           {/* Eyebrow tag */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-600/20 border border-brand-600/30 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" aria-hidden />
-            <span className="text-brand-500 text-xs font-semibold tracking-wide uppercase">
+            <span className="text-brand-300 text-xs font-semibold tracking-wide uppercase">
               Offsite Backup &amp; Disaster Recovery
             </span>
           </div>

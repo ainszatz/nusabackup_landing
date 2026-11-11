@@ -14,6 +14,9 @@ interface LeadFormModalProps {
   triggerClassName?: string
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 export function LeadFormModal({
   packageId,
   packageName,
@@ -26,23 +29,72 @@ export function LeadFormModal({
 }: LeadFormModalProps) {
   const [open, setOpen] = useState(false)
   const dialogRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Trap focus and handle Escape key when modal is open
+  // Focus management + scroll lock while the dialog is open (WCAG 2.4.3, 2.1.2).
   useEffect(() => {
     if (!open) return
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const trigger = triggerRef.current
+
+    const getFocusable = () =>
+      Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+        (el) => el.offsetParent !== null
+      )
+
+    // Move focus into the dialog: first form field, else the close button.
+    const firstField = dialog.querySelector<HTMLElement>('#lead-name')
+    const focusTarget = firstField ?? getFocusable()[0]
+    focusTarget?.focus()
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setOpen(false)
+        return
+      }
+      if (e.key !== 'Tab') return
+
+      const items = getFocusable()
+      if (items.length === 0) return
+
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement as HTMLElement | null
+
+      // Keep Tab cycling inside the dialog.
+      if (!active || !dialog.contains(active)) {
+        e.preventDefault()
+        first.focus()
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
+
     document.addEventListener('keydown', handleKeyDown)
 
-    // Prevent body scroll while modal is open
-    const prev = document.body.style.overflow
+    // Prevent body scroll without shifting the layout (scrollbar gap).
+    const previousOverflow = document.body.style.overflow
+    const previousPadding = document.body.style.paddingRight
+    const scrollbarGap = window.innerWidth - document.documentElement.clientWidth
     document.body.style.overflow = 'hidden'
+    if (scrollbarGap > 0) {
+      document.body.style.paddingRight = `${scrollbarGap}px`
+    }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = prev
+      document.body.style.overflow = previousOverflow
+      document.body.style.paddingRight = previousPadding
+      // Restore focus to whatever opened the dialog.
+      ;(previouslyFocused ?? trigger)?.focus?.()
     }
   }, [open])
 
@@ -53,6 +105,7 @@ export function LeadFormModal({
     <>
       {/* Trigger button */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         className={triggerClassName ?? defaultTriggerClass}
@@ -73,12 +126,7 @@ export function LeadFormModal({
 
       {/* Modal */}
       {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-        >
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -89,6 +137,10 @@ export function LeadFormModal({
           {/* Panel */}
           <div
             ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            aria-describedby="modal-description"
             className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
           >
             {/* Header */}
@@ -97,15 +149,17 @@ export function LeadFormModal({
                 <h2 id="modal-title" className="font-display font-bold text-navy-900 text-lg">
                   {packageName ? `Pesan Paket ${packageName}` : 'Hubungi Kami'}
                 </h2>
-                {segmentName && (
-                  <p className="text-slate-400 text-xs mt-0.5">{segmentName}</p>
-                )}
+                <p id="modal-description" className="text-slate-500 text-xs mt-0.5">
+                  {segmentName
+                    ? `Isi formulir, tim ${segmentName} akan menghubungi Anda.`
+                    : 'Isi formulir, tim kami akan menghubungi Anda dalam 1×24 jam.'}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Tutup"
-                className="shrink-0 flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="shrink-0 inline-flex items-center justify-center w-11 h-11 -mr-2 rounded-lg text-slate-500 hover:text-navy-900 hover:bg-slate-100 transition-colors"
               >
                 <svg
                   width="16"

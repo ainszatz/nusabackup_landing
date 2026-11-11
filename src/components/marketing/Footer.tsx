@@ -141,10 +141,10 @@ export function Footer({ settings }: FooterProps) {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-400 text-xs">
             &copy; {new Date().getFullYear()} NusaBackup. Seluruh hak dilindungi.
           </p>
-          <p className="text-slate-600 text-xs">
+          <p className="text-slate-400 text-xs">
             Layanan backup offsite &amp; disaster recovery Indonesia
           </p>
         </div>

@@ -110,7 +110,7 @@ export async function submitLead(
   const raw = {
     name: str(formData.get('name')) ?? '',
     email: str(formData.get('email')),
-    phone: str(formData.get('phone')),
+    phone: str(formData.get('phone'))?.replace(/[\s\-().]/g, ''),
     organization: str(formData.get('organization')),
     message: str(formData.get('message')),
     preferred_channel: str(formData.get('preferred_channel')) ?? 'whatsapp',

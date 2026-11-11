@@ -17,6 +17,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'
+  ),
   title: {
     default: 'NusaBackup — Layanan Backup Offsite & Disaster Recovery',
     template: '%s | NusaBackup',
