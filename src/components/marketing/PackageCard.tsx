@@ -81,9 +81,10 @@ export function PackageCard({
           {pkg.name}
         </h3>
 
-        {/* Description */}
+        {/* Description — 3 baris konsisten (min-h = tinggi 3 baris) supaya
+            kalimat pendek tetap sejajar dengan yang panjang, tanpa "…". */}
         {pkg.description && (
-          <p className="text-slate-500 text-sm leading-relaxed mb-5 line-clamp-2">
+          <p className="text-slate-500 text-sm leading-relaxed mb-5 min-h-[4.25rem] line-clamp-3 max-[359px]:line-clamp-4">
             {pkg.description}
           </p>
         )}
