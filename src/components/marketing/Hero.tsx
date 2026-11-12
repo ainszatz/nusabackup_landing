@@ -6,6 +6,13 @@ interface HeroProps {
   settings: PublicSettings
 }
 
+const TRUST_SIGNALS = [
+  { Icon: Lock, text: 'Enkripsi AES-256' },
+  { Icon: Zap, text: 'Backup otomatis setiap jam' },
+  { Icon: ShieldCheck, text: 'RTO / RPO terukur' },
+  { Icon: MapPin, text: 'Server Indonesia' },
+]
+
 export function Hero({ settings }: HeroProps) {
   const waNumber = settings.wa_number ?? ''
   const waLink = waNumber
@@ -100,15 +107,10 @@ export function Hero({ settings }: HeroProps) {
           </div>
 
           {/* Trust signals */}
-          <div className="mt-14 flex flex-wrap items-center gap-6 text-slate-400 text-sm">
-            {[
-              { Icon: Lock, text: 'Enkripsi AES-256' },
-              { Icon: Zap, text: 'Backup otomatis setiap jam' },
-              { Icon: ShieldCheck, text: 'RTO / RPO terukur' },
-              { Icon: MapPin, text: 'Server Indonesia' },
-            ].map(({ Icon, text }) => (
+          <div className="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3 text-slate-300 text-sm">
+            {TRUST_SIGNALS.map(({ Icon, text }) => (
               <span key={text} className="flex items-center gap-2">
-                <Icon className="size-4 text-brand-300" aria-hidden />
+                <Icon size={15} strokeWidth={2} className="text-brand-300" aria-hidden />
                 {text}
               </span>
             ))}

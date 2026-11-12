@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { PackageWithDetails } from '@/types'
 import { LeadFormModal } from './LeadFormModal'
+import { normalizePricePrefix } from '@/lib/format-price'
 
 interface PackageCardProps {
   pkg: PackageWithDetails
@@ -42,6 +43,7 @@ export function PackageCard({
   const secondaryCta = !isHighlighted && showFeaturedBadge
   const detailHref = pkg.segment?.slug ? `/${pkg.segment.slug}/${pkg.slug}` : null
   const hasPrice = pkg.price_amount !== null
+  const pricePrefix = normalizePricePrefix(pkg.price_prefix)
   const waText = buildWAText(pkg)
   const waHref = waNumber
     ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`
@@ -101,8 +103,8 @@ export function PackageCard({
         <div className="mb-6">
           {hasPrice ? (
             <div className="flex items-baseline gap-1.5">
-              {pkg.price_prefix && (
-                <span className="text-slate-500 text-sm font-medium">{pkg.price_prefix}</span>
+              {pricePrefix && (
+                <span className="text-slate-500 text-sm font-medium">{pricePrefix}</span>
               )}
               <span className="font-display font-extrabold text-3xl text-navy-900">
                 Rp {formatPriceAmount(pkg.price_amount!)}
@@ -114,7 +116,7 @@ export function PackageCard({
           ) : (
             <div className="flex items-baseline">
               <span className="font-display font-extrabold text-2xl text-navy-900">
-                {pkg.price_prefix ?? 'Hubungi kami'}
+                {pricePrefix ?? 'Hubungi kami'}
               </span>
             </div>
           )}

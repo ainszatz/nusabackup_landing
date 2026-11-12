@@ -112,6 +112,7 @@ export function LeadForm({
       const field = form.elements.namedItem(name)
       if (field instanceof HTMLInputElement) {
         if (field.type === 'radio') field.checked = field.value === value
+        else if (field.type === 'checkbox') field.checked = value === 'on'
         else if (field.type !== 'hidden') field.value = value
       } else if (field instanceof HTMLTextAreaElement) {
         field.value = value

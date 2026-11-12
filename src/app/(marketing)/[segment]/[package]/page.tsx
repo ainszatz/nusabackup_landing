@@ -6,6 +6,7 @@ import { getPackageBySlug, getAllActivePackages } from '@/lib/queries/packages'
 import { getPublicSettings } from '@/lib/queries/settings'
 import { JsonLd } from '@/components/marketing/JsonLd'
 import { LeadFormModal } from '@/components/marketing/LeadFormModal'
+import { normalizePricePrefix } from '@/lib/format-price'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'
 
@@ -67,6 +68,7 @@ export default async function PackageDetailPage({ params }: Props) {
   if (!pkg) notFound()
 
   const waNumber = settings.wa_number ?? ''
+  const pricePrefix = normalizePricePrefix(pkg.price_prefix)
   const contactEmail = settings.email ?? ''
   const waText = `Halo NusaBackup, saya tertarik dengan paket *${pkg.name}* (${pkg.segment?.name ?? ''}). Boleh saya mendapat informasi lebih lanjut?`
   const waHref = waNumber
@@ -175,8 +177,8 @@ export default async function PackageDetailPage({ params }: Props) {
               <div className="flex items-baseline gap-2 mb-8">
                 {pkg.price_amount != null ? (
                   <>
-                    {pkg.price_prefix && (
-                      <span className="text-slate-400 text-sm">{pkg.price_prefix}</span>
+                    {pricePrefix && (
+                      <span className="text-slate-400 text-sm">{pricePrefix}</span>
                     )}
                     <span className="font-display font-extrabold text-3xl sm:text-4xl text-white">
                       {formatPrice(pkg.price_amount)}
@@ -187,7 +189,7 @@ export default async function PackageDetailPage({ params }: Props) {
                   </>
                 ) : (
                   <span className="font-display font-extrabold text-3xl text-white">
-                    {pkg.price_prefix ?? 'Hubungi kami untuk harga'}
+                    {pricePrefix ?? 'Hubungi kami untuk harga'}
                   </span>
                 )}
               </div>

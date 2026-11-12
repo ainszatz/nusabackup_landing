@@ -31,7 +31,7 @@ export function LeadFilterForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
+    <form onSubmit={handleSubmit} role="search" className="flex flex-wrap items-center gap-2">
       <select
         name="status"
         aria-label="Filter status lead"
@@ -50,6 +50,7 @@ export function LeadFilterForm({
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           name="q"
+          aria-label="Cari lead berdasarkan nama atau organisasi"
           defaultValue={currentQ}
           placeholder="Cari nama / organisasi..."
           className="pl-7 w-52"

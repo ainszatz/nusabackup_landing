@@ -170,6 +170,10 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 | R3 | Counter "N dari N fitur" hanya tampil kalau ada fitur yang tidak termasuk | halaman detail 7/7 → counter tidak dirender |
 | R4 (title) | Seragamkan separator: `Nama — Segmen \| NusaBackup` | title detail `Bisnis Plus — Umum \| NusaBackup` |
 | — | Halaman detail paket tidak lagi yatim: judul kartu + tautan "Lihat detail paket" menuju `/{segmen}/{paket}` | 3 kartu home menaut ke `/umum/bisnis-plus`, `/kesehatan/standard-healthcare`, `/pendidikan/kampus-yayasan` |
+| S2 | Persetujuan Kebijakan Privasi **disimpan** sebagai bukti (UU PDP): timestamp ditulis ke `admin_notes` saat lead dibuat; checkbox dipulihkan setelah error validasi | submit tanpa centang → *"Persetujuan Kebijakan Privasi wajib dicentang."*, tidak ada insert; nama/telepon tetap terisi |
+| R2 | Emoji diganti ikon SVG (Lucide): trust strip hero + kartu segmen | 0 emoji di HTML live; ikon SVG dirender |
+| CMS | Prefix harga dinormalisasi (`Mulai`/`mulai dari` → `Mulai dari`) saat render **dan** saat simpan | 3 kartu home seragam "Mulai dari" |
+| Admin | Login: `role="alert"` untuk error, `aria-invalid`/`aria-describedby`, autofocus email, tautan balik ke situs; filter lead: `role="search"` + `aria-label`; umpan balik status/catatan: `role="status"/"alert"` + kontras `green-700`; timestamp aktivitas → `slate-500` | `/admin` tanpa sesi → 307 ke `/admin/login`; autofocus terverifikasi |
 | — | Temuan tambahan saat uji: input pengguna **hilang** setelah error validasi (React reset form action) — sekarang di-restore | nama/instansi/telepon tetap terisi setelah error |
 | Housekeeping | `next-config.ts` (sisa config root-owned) dihapus | `pnpm lint` bersih |
 
@@ -187,6 +191,10 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 - **`ActiveToggle`** berlabel generik "Toggle aktif" → label spesifik ("Status aktif paket Bisnis Plus").
 - **Select filter leads** tanpa label → `aria-label="Filter status lead"`.
 - **Harga di tabel admin** "IDR 2.000.000 bulan" → "Rp 2.000.000 /bulan".
+- **Login**: error kini `role="alert"`, input punya `aria-invalid`/`aria-describedby`, email autofocus, plus tautan "← Kembali ke situs".
+- **Filter lead**: form `role="search"` + input pencarian punya `aria-label` (sebelumnya tanpa nama aksesibel).
+- **Umpan balik status & catatan**: `role="status"` untuk sukses, `role="alert"` untuk error; warna `green-600` (≈3.1:1) → `green-700`.
+- **Timestamp aktivitas lead**: `text-slate-400` (2.56:1) → `text-slate-500`.
 
 ### Terverifikasi baik (tidak diubah)
 
@@ -199,7 +207,7 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 1. **`getLeadsFiltered` tanpa limit/pagination** — memuat semua lead; perlu paging + index saat data bertambah.
 2. **Kontrol < 44 px**: switch 18 px, tombol `size="sm"`/ikon 28 px — lolos minimum 24 px (WCAG 2.5.8) tapi sulit di layar sentuh.
 3. **Tabel tanpa `<caption>`/`aria-label`** — konteks screen reader bergantung pada heading halaman.
-4. **Login**: tidak ada tampilkan-password maupun alur lupa password; pesan error belum `aria-live`.
+4. **Login**: tidak ada tampilkan-password maupun alur lupa password (reset masih manual lewat Supabase).
 5. **Halaman detail lead** belum diuji mendalam (sesi uji sudah dihapus sebelum eksplorasi form status/catatan).
 6. **Dashboard**: 6 kartu statistik tanpa rentang waktu/trend, tanpa aksi cepat.
 
@@ -207,7 +215,7 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 
 - **S1** Social proof (logo klien, testimoni, sertifikasi, angka SLA).
 - **Konten:** kebijakan privasi perlu ditinjau bagian retensi (24 bulan), entitas hukum, dan kontak DPO sebelum dipublikasikan sebagai final.
-- **Consent:** persetujuan belum tersimpan sebagai bukti (perlu kolom `consent_at` di tabel `leads` + migrasi).
+- **Consent:** persetujuan kini disimpan sebagai bukti di `admin_notes` (timestamp ISO) sampai ada migrasi kolom khusus `consent_at`/`consent_version`.
 - **Admin:** butuh pagination leads (lihat temuan #1).
 
 ## Rekomendasi urutan perbaikan (sisa)

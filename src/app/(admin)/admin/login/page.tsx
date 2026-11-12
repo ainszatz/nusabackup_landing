@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { loginAction } from '@/actions/auth'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,9 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
+                autoFocus
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? 'login-error' : undefined}
                 placeholder="admin@nusabackup.id"
               />
             </div>
@@ -39,12 +43,20 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? 'login-error' : undefined}
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+              <p
+                id="login-error"
+                role="alert"
+                className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
+                {error}
+              </p>
             )}
 
             <Button type="submit" disabled={pending} className="w-full">
@@ -52,6 +64,12 @@ export default function LoginPage() {
             </Button>
           </form>
         </div>
+
+        <p className="mt-6 text-center text-sm">
+          <Link href="/" className="text-slate-500 hover:text-navy-900 transition-colors">
+            ← Kembali ke situs
+          </Link>
+        </p>
       </div>
     </div>
   )
