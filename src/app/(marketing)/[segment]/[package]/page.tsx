@@ -25,7 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pkg = await getPackageBySlug(segSlug, pkgSlug)
   if (!pkg) return { title: 'Paket Tidak Ditemukan' }
 
-  const title = `${pkg.name} | ${pkg.segment?.name ?? ''} — NusaBackup`
+  const title = pkg.segment?.name
+    ? `${pkg.name} — ${pkg.segment.name} | NusaBackup`
+    : `${pkg.name} | NusaBackup`
   const description =
     pkg.description ?? `Paket ${pkg.name} dari NusaBackup untuk segmen ${pkg.segment?.name ?? ''}.`
 
@@ -262,9 +264,11 @@ export default async function PackageDetailPage({ params }: Props) {
             >
               Yang termasuk dalam paket ini
             </h2>
-            <span className="text-sm text-slate-500">
-              {includedCount} dari {features.length} fitur
-            </span>
+            {includedCount < features.length && (
+              <span className="text-sm text-slate-500">
+                {includedCount} dari {features.length} fitur
+              </span>
+            )}
           </div>
 
           {features.length > 0 ? (

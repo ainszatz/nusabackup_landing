@@ -166,21 +166,26 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 | T2 | Badge "PALING POPULER" hanya muncul saat kandidatnya tunggal (`showFeaturedBadge`); homepage lintas segmen kini tanpa badge, kartu setara | home: 0 badge, 3 kartu border sama; `/umum`: 1 badge dari 2 kartu; detail paket: 1 badge |
 | T3 | Satu CTA primer per kartu ("Pesan Sekarang"); WhatsApp diturunkan jadi tautan teks `atau tanya via WhatsApp`; kartu non-unggulan pakai CTA outline saat ada kartu unggulan | `/umum`: kartu unggulan `bg brand-600`, kartu lain `border navy-900` (transparan); tiap kartu 1 `<button>` + 1 link teks |
 | R4 (tag) | Tag segmen disembunyikan di halaman segmen (tidak berulang dengan judul & breadcrumb) | `/umum` tidak lagi menampilkan chip "UMUM" di tiap kartu |
+| S3 | `/kontak?segmen=<slug>` sekarang dipakai: lookup segmen, banner konteks, dan `segment_id`/`segment_name` ikut terkirim di form | `?segmen=umum` → banner "…segmen Umum." + hidden `segment_id=s1`, `segment_name=Umum` |
+| R3 | Counter "N dari N fitur" hanya tampil kalau ada fitur yang tidak termasuk | halaman detail 7/7 → counter tidak dirender |
+| R4 (title) | Seragamkan separator: `Nama — Segmen \| NusaBackup` | title detail `Bisnis Plus — Umum \| NusaBackup` |
+| — | Halaman detail paket tidak lagi yatim: judul kartu + tautan "Lihat detail paket" menuju `/{segmen}/{paket}` | 3 kartu home menaut ke `/umum/bisnis-plus`, `/kesehatan/standard-healthcare`, `/pendidikan/kampus-yayasan` |
 | — | Temuan tambahan saat uji: input pengguna **hilang** setelah error validasi (React reset form action) — sekarang di-restore | nama/instansi/telepon tetap terisi setelah error |
 | Housekeeping | `next-config.ts` (sisa config root-owned) dihapus | `pnpm lint` bersih |
 
-**Verifikasi:** `pnpm lint` 0 error, `pnpm build` sukses (19 rute, semua halaman statis/SSG seperti sebelumnya). Uji browser dilakukan pada build produksi lokal dengan mock PostgREST (DB produksi tidak dapat dijangkau dari mesin ini).
+**Verifikasi:** `pnpm lint` 0 error, `pnpm build` sukses (19 rute). Item S3/R3/R4/detail-link diverifikasi pada build produksi lokal yang memakai data produksi asli.
 
 ### Belum dikerjakan (butuh keputusan desain/konten)
 
 - **S1** Social proof (logo klien, testimoni, sertifikasi, angka SLA).
 - **S2** Halaman kebijakan privasi + consent form.
-- **S3** `?segmen=` masih belum dipakai halaman kontak untuk mengisi konteks.
-- **R2** Ikon emoji vs SVG, **R3** counter "N dari N fitur", **R4** konsistensi separator title.
-- **Konten:** prefix harga tidak seragam di CMS ("Mulai dari" vs "Mulai"), urutan segmen kartu mengikuti `sort_order` DB.
+- **R2** Ikon emoji vs SVG.
+- **Konten:** prefix harga tidak seragam di CMS ("Mulai dari" vs "Mulai").
+- **Admin:** area `/admin` belum diaudit (baru halaman login).
 
 ## Rekomendasi urutan perbaikan (sisa)
-1. S1 + S2 (social proof & privasi) — konten.
-2. S3 (prefill segmen) + R2–R4 — cleanup berikutnya.
-3. Rapikan copy di CMS: prefix harga seragam.
+1. S2 (privasi) — risiko kepatuhan, sebelum menambah trafik.
+2. S1 (social proof) — konten.
+3. R2 + copy CMS + audit `/admin`.
+
 

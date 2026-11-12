@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getPublicSettings } from '@/lib/queries/settings'
+import { getSegmentBySlug } from '@/lib/queries/segments'
 import { ContactInfo } from '@/components/marketing/ContactInfo'
 import { LeadForm } from '@/components/marketing/LeadForm'
 
@@ -25,8 +26,17 @@ export const metadata: Metadata = {
   alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'}/kontak` },
 }
 
-export default async function KontakPage() {
-  const settings = await getPublicSettings()
+type KontakPageProps = {
+  searchParams: Promise<{ segmen?: string }>
+}
+
+export default async function KontakPage({ searchParams }: KontakPageProps) {
+  const { segmen } = await searchParams
+  // Konteks dari halaman segmen (/kontak?segmen=umum) ikut terkirim ke lead.
+  const [settings, segment] = await Promise.all([
+    getPublicSettings(),
+    segmen ? getSegmentBySlug(segmen) : Promise.resolve(null),
+  ])
 
   const waNumber = settings.wa_number ?? ''
   const waHref = waNumber
@@ -135,8 +145,16 @@ export default async function KontakPage() {
                 Isi formulir berikut dan tim kami akan menghubungi Anda dalam 1×24 jam.
               </p>
 
+              {segment && (
+                <p className="mb-6 rounded-lg border border-brand-100 bg-brand-50 px-3.5 py-2.5 text-sm text-brand-700">
+                  Anda menghubungi kami untuk segmen <strong>{segment.name}</strong>.
+                </p>
+              )}
+
               <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
                 <LeadForm
+                  segmentId={segment?.id ?? null}
+                  segmentName={segment?.name ?? null}
                   waNumber={settings.wa_number ?? ''}
                   contactEmail={settings.email ?? ''}
                 />
