@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, MessageSquare, RefreshCw } from 'lucide-react'
@@ -18,6 +19,8 @@ function formatDate(iso: string) {
     minute: '2-digit',
   }).format(new Date(iso))
 }
+
+export const metadata: Metadata = { title: 'Detail Lead' }
 
 function DetailRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null

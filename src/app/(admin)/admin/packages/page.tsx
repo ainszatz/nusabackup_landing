@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,8 @@ import { ActiveToggle } from '@/components/admin/ActiveToggle'
 import { getAllPackagesGrouped } from '@/lib/queries/packages'
 import { getAllSegments } from '@/lib/queries/segments'
 import { togglePackageActive } from '@/actions/packages'
+
+export const metadata: Metadata = { title: 'Paket' }
 
 function formatPrice(pkg: {
   price_prefix?: string | null
@@ -72,7 +75,7 @@ export default async function PackagesPage() {
           </div>
 
           <div className="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-            <Table>
+            <Table aria-label={`Daftar paket segmen ${seg.name}`}>
               <TableHeader>
                 <TableRow>
                   <TableHead>Icon</TableHead>

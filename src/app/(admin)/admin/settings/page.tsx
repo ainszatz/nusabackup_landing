@@ -1,8 +1,11 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsForm } from './SettingsForm'
 import type { PublicSettings } from '@/types'
+
+export const metadata: Metadata = { title: 'Pengaturan' }
 
 async function getAdminSettings(): Promise<PublicSettings> {
   const supabase = await createClient()

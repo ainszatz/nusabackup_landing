@@ -195,6 +195,10 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 - **Filter lead**: form `role="search"` + input pencarian punya `aria-label` (sebelumnya tanpa nama aksesibel).
 - **Umpan balik status & catatan**: `role="status"` untuk sukses, `role="alert"` untuk error; warna `green-600` (≈3.1:1) → `green-700`.
 - **Timestamp aktivitas lead**: `text-slate-400` (2.56:1) → `text-slate-500`.
+- **Pagination leads**: `getLeadsFiltered` kini memakai `{ count: 'exact' }` + `.range()` (25/halaman) dan halaman punya navigasi Sebelumnya/Berikutnya yang mempertahankan filter `status`/`q`.
+- **Tabel**: keempat tabel (lead terbaru, daftar lead, paket per segmen, segmen) diberi `aria-label`.
+- **Title per halaman admin**: template `%s | Admin NusaBackup` + title masing-masing halaman; area admin juga `robots: noindex`.
+- **403**: kini ada tombol keluar + tautan "Kembali ke situs" (sebelumnya jalan buntu).
 
 ### Terverifikasi baik (tidak diubah)
 
@@ -204,12 +208,13 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 
 ### Temuan yang belum diperbaiki
 
-1. **`getLeadsFiltered` tanpa limit/pagination** — memuat semua lead; perlu paging + index saat data bertambah.
-2. **Kontrol < 44 px**: switch 18 px, tombol `size="sm"`/ikon 28 px — lolos minimum 24 px (WCAG 2.5.8) tapi sulit di layar sentuh.
-3. **Tabel tanpa `<caption>`/`aria-label`** — konteks screen reader bergantung pada heading halaman.
-4. **Login**: tidak ada tampilkan-password maupun alur lupa password (reset masih manual lewat Supabase).
-5. **Halaman detail lead** belum diuji mendalam (sesi uji sudah dihapus sebelum eksplorasi form status/catatan).
-6. **Dashboard**: 6 kartu statistik tanpa rentang waktu/trend, tanpa aksi cepat.
+1. **Kontrol < 44 px**: switch 18 px, tombol `size="sm"`/ikon 28 px — lolos minimum 24 px (WCAG 2.5.8) tapi sulit di layar sentuh.
+2. **Login**: tidak ada tampilkan-password maupun alur lupa password (reset masih manual lewat Supabase).
+3. **Halaman detail lead** belum diuji end-to-end dengan sesi login (perbaikan aria & kontras sudah masuk).
+4. **Dashboard**: 6 kartu statistik tanpa rentang waktu/trend, tanpa aksi cepat.
+5. **Audit log CMS**: perubahan paket/segmen/pengaturan tidak mencatat pelaku.
+6. **Pencarian** di halaman Paket/Segmen belum ada (wajar selama katalog kecil).
+7. **Pagination belum teruji visual**: tabel `leads` di produksi masih kosong (0 baris), sehingga navigasi halaman belum pernah dirender dengan data nyata; logika query (count + range) sudah diuji langsung ke DB.
 
 ### Belum dikerjakan (butuh keputusan desain/konten)
 

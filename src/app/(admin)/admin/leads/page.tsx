@@ -1,10 +1,16 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LeadStatusBadge } from '@/components/admin/LeadStatusBadge'
 import { LeadFilterForm } from './LeadFilterForm'
 import { getLeadsFiltered } from '@/lib/queries/leads'
+
+export const metadata: Metadata = { title: 'Leads' }
+
+const PAGE_SIZE = 25
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat('id-ID', {
@@ -24,21 +30,41 @@ export default async function LeadsPage({
   const params = await searchParams
   const status = params.status ?? ''
   const q = params.q ?? ''
+  const requestedPage = Number.parseInt(params.page ?? '1', 10)
 
-  const leads = await getLeadsFiltered({ status, q })
+  const {
+    rows: leads,
+    total,
+    page,
+    pageCount,
+  } = await getLeadsFiltered({
+    status,
+    q,
+    page: Number.isFinite(requestedPage) ? requestedPage : 1,
+    pageSize: PAGE_SIZE,
+  })
+
+  const hrefFor = (target: number) => {
+    const sp = new URLSearchParams()
+    if (status && status !== 'semua') sp.set('status', status)
+    if (q.trim()) sp.set('q', q.trim())
+    if (target > 1) sp.set('page', String(target))
+    const qs = sp.toString()
+    return `/admin/leads${qs ? `?${qs}` : ''}`
+  }
 
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Leads</h1>
-          <p className="text-sm text-slate-500">{leads.length} lead ditemukan</p>
+          <p className="text-sm text-slate-500">{total} lead ditemukan</p>
         </div>
         <LeadFilterForm currentStatus={status} currentQ={q} />
       </div>
 
       <div className="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-        <Table>
+        <Table aria-label="Daftar lead">
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
@@ -85,6 +111,51 @@ export default async function LeadsPage({
           </TableBody>
         </Table>
       </div>
+
+      {pageCount > 1 && (
+        <nav
+          aria-label="Navigasi halaman lead"
+          className="flex flex-wrap items-center justify-between gap-3 text-sm"
+        >
+          <p className="text-slate-500">
+            Halaman {page} dari {pageCount} · {PAGE_SIZE} per halaman
+          </p>
+          <div className="flex items-center gap-2">
+            {page > 1 ? (
+              <Link
+                href={hrefFor(page - 1)}
+                rel="prev"
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 text-slate-700 hover:border-slate-300 hover:text-navy-900 transition-colors"
+              >
+                <ChevronLeft className="size-4" aria-hidden /> Sebelumnya
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-100 px-3 text-slate-400"
+              >
+                <ChevronLeft className="size-4" aria-hidden /> Sebelumnya
+              </span>
+            )}
+            {page < pageCount ? (
+              <Link
+                href={hrefFor(page + 1)}
+                rel="next"
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 text-slate-700 hover:border-slate-300 hover:text-navy-900 transition-colors"
+              >
+                Berikutnya <ChevronRight className="size-4" aria-hidden />
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-100 px-3 text-slate-400"
+              >
+                Berikutnya <ChevronRight className="size-4" aria-hidden />
+              </span>
+            )}
+          </div>
+        </nav>
+      )}
     </div>
   )
 }

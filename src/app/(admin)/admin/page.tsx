@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -17,6 +18,8 @@ function formatDate(iso: string) {
     minute: '2-digit',
   }).format(new Date(iso))
 }
+
+export const metadata: Metadata = { title: 'Dashboard' }
 
 export default async function DashboardPage() {
   const [summary, recentLeads] = await Promise.all([
@@ -62,7 +65,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <div className="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-          <Table>
+          <Table aria-label="Lead terbaru">
             <TableHeader>
               <TableRow>
                 <TableHead>Nama</TableHead>
