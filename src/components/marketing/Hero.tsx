@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Lock, Zap, ShieldCheck, MapPin } from 'lucide-react'
 import type { PublicSettings } from '@/types'
 
 interface HeroProps {
@@ -101,14 +102,14 @@ export function Hero({ settings }: HeroProps) {
           {/* Trust signals */}
           <div className="mt-14 flex flex-wrap items-center gap-6 text-slate-400 text-sm">
             {[
-              { icon: '🔒', text: 'Enkripsi AES-256' },
-              { icon: '⚡', text: 'Backup otomatis setiap jam' },
-              { icon: '🛡️', text: 'RTO / RPO terukur' },
-              { icon: '🇮🇩', text: 'Server Indonesia' },
-            ].map((t) => (
-              <span key={t.text} className="flex items-center gap-1.5">
-                <span aria-hidden>{t.icon}</span>
-                {t.text}
+              { Icon: Lock, text: 'Enkripsi AES-256' },
+              { Icon: Zap, text: 'Backup otomatis setiap jam' },
+              { Icon: ShieldCheck, text: 'RTO / RPO terukur' },
+              { Icon: MapPin, text: 'Server Indonesia' },
+            ].map(({ Icon, text }) => (
+              <span key={text} className="flex items-center gap-2">
+                <Icon className="size-4 text-brand-300" aria-hidden />
+                {text}
               </span>
             ))}
           </div>

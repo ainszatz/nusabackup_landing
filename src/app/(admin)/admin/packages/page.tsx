@@ -21,8 +21,8 @@ function formatPrice(pkg: {
   const amount = new Intl.NumberFormat('id-ID').format(pkg.price_amount)
   const parts = [
     pkg.price_prefix,
-    `${pkg.currency ?? 'IDR'} ${amount}`,
-    pkg.price_period,
+    `Rp ${amount}`,
+    pkg.price_period ? `/${pkg.price_period}` : null,
   ].filter(Boolean)
   return parts.join(' ')
 }
@@ -88,7 +88,7 @@ export default async function PackagesPage() {
               <TableBody>
                 {seg.packages.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-slate-400 py-8">
+                    <TableCell colSpan={8} className="text-center text-slate-500 py-8">
                       Belum ada paket di segmen ini
                     </TableCell>
                   </TableRow>
@@ -129,7 +129,7 @@ export default async function PackagesPage() {
                       {pkg.is_featured ? (
                         <span className="text-xs font-medium text-gold-600">✓</span>
                       ) : (
-                        <span className="text-xs text-slate-300">—</span>
+                        <span className="text-xs text-slate-400">—</span>
                       )}
                     </TableCell>
                     <TableCell className="text-slate-600">{pkg.sort_order}</TableCell>
@@ -137,6 +137,7 @@ export default async function PackagesPage() {
                       <ActiveToggle
                         id={pkg.id}
                         isActive={pkg.is_active}
+                        label={`Status aktif paket ${pkg.name}`}
                         onToggle={togglePackageActive}
                       />
                     </TableCell>
@@ -163,7 +164,7 @@ export default async function PackagesPage() {
       ))}
 
       {grouped.length === 0 && (
-        <div className="rounded-xl bg-white ring-1 ring-slate-200 p-12 text-center text-slate-400">
+        <div className="rounded-xl bg-white ring-1 ring-slate-200 p-12 text-center text-slate-500">
           Belum ada segmen. Tambahkan segmen terlebih dahulu.
         </div>
       )}

@@ -118,6 +118,7 @@ export async function submitLead(
     package_id: str(formData.get('package_id')) ?? null,
     segment_name: str(formData.get('segment_name')) ?? null,
     package_name: str(formData.get('package_name')) ?? null,
+    consent: str(formData.get('consent')),
   }
 
   const parsed = leadSchema.safeParse(raw)

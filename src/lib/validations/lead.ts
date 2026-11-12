@@ -26,6 +26,11 @@ export const leadSchema = z.object({
   package_id: z.string().nullable().optional(),
   segment_name: z.string().nullable().optional(),
   package_name: z.string().nullable().optional(),
+  consent: z
+    .string({ message: 'Persetujuan Kebijakan Privasi wajib dicentang.' })
+    .refine((v) => v === 'on', {
+      message: 'Persetujuan Kebijakan Privasi wajib dicentang.',
+    }),
 }).superRefine((data, ctx) => {
   // A lead with no reachable channel is useless — require at least one.
   if (!data.email && !data.phone) {

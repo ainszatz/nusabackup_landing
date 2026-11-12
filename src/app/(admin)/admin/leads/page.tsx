@@ -52,7 +52,7 @@ export default async function LeadsPage({
           <TableBody>
             {leads.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-slate-400 py-12">
+                <TableCell colSpan={6} className="text-center text-slate-500 py-12">
                   Tidak ada lead ditemukan
                 </TableCell>
               </TableRow>

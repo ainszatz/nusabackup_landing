@@ -7,10 +7,12 @@ import { Switch } from '@/components/ui/switch'
 interface Props {
   id: string
   isActive: boolean
+  /** Label spesifik supaya screen reader tahu apa yang di-toggle. */
+  label?: string
   onToggle: (id: string, value: boolean) => Promise<unknown>
 }
 
-export function ActiveToggle({ id, isActive, onToggle }: Props) {
+export function ActiveToggle({ id, isActive, label, onToggle }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -26,7 +28,7 @@ export function ActiveToggle({ id, isActive, onToggle }: Props) {
       checked={isActive}
       onCheckedChange={handleChange}
       disabled={pending}
-      aria-label="Toggle aktif"
+      aria-label={label ?? 'Toggle aktif'}
     />
   )
 }

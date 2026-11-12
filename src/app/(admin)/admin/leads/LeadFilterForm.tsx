@@ -34,6 +34,7 @@ export function LeadFilterForm({
     <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2">
       <select
         name="status"
+        aria-label="Filter status lead"
         defaultValue={currentStatus || 'semua'}
         className="h-8 rounded-lg border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
       >

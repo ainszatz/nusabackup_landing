@@ -173,19 +173,47 @@ Sudah dikerjakan di branch `master` (belum di-deploy):
 | — | Temuan tambahan saat uji: input pengguna **hilang** setelah error validasi (React reset form action) — sekarang di-restore | nama/instansi/telepon tetap terisi setelah error |
 | Housekeeping | `next-config.ts` (sisa config root-owned) dihapus | `pnpm lint` bersih |
 
-**Verifikasi:** `pnpm lint` 0 error, `pnpm build` sukses (19 rute). Item S3/R3/R4/detail-link diverifikasi pada build produksi lokal yang memakai data produksi asli.
+**Verifikasi:** `pnpm lint` 0 error, `pnpm build` sukses (20 rute). Item S3/R3/R4/detail-link diverifikasi pada build produksi lokal yang memakai data produksi asli.
+
+## Audit /admin (12 Nov 2026)
+
+**Metode:** sesi uji sementara — user dibuat lewat service role, cookie sesi di-inject ke browser, 5 halaman diperiksa di 1440 & 390 px, lalu user + profil dihapus (diverifikasi `listUsers`: tidak ada sisa).
+
+### Diperbaiki
+
+- **Sidebar tanpa status aktif** → kini `aria-current="page"` + highlight; terukur tepat 1 item aktif di setiap halaman.
+- **Sidebar 224 px dipaksa di mobile** → kini bar horizontal 121 px; `main` full-width 390 px, tanpa overflow.
+- **Kontras empty state** `text-slate-400` (2.56:1) → `text-slate-500` di dashboard, leads, segmen, paket; placeholder "—" dinaikkan satu tingkat.
+- **`ActiveToggle`** berlabel generik "Toggle aktif" → label spesifik ("Status aktif paket Bisnis Plus").
+- **Select filter leads** tanpa label → `aria-label="Filter status lead"`.
+- **Harga di tabel admin** "IDR 2.000.000 bulan" → "Rp 2.000.000 /bulan".
+
+### Terverifikasi baik (tidak diubah)
+
+- Dialog paket (base-ui): fokus pindah ke field pertama, 22× Tab tidak ada yang keluar panel, Escape menutup dan fokus kembali ke tombol "Tambah Paket", scroll body terkunci.
+- Tabel punya wrapper `overflow-x-auto`: di 390 px tabel scroll sendiri, halaman tidak melebar.
+- Tidak ada overflow horizontal di kelima halaman (1440 & 390).
+
+### Temuan yang belum diperbaiki
+
+1. **`getLeadsFiltered` tanpa limit/pagination** — memuat semua lead; perlu paging + index saat data bertambah.
+2. **Kontrol < 44 px**: switch 18 px, tombol `size="sm"`/ikon 28 px — lolos minimum 24 px (WCAG 2.5.8) tapi sulit di layar sentuh.
+3. **Tabel tanpa `<caption>`/`aria-label`** — konteks screen reader bergantung pada heading halaman.
+4. **Login**: tidak ada tampilkan-password maupun alur lupa password; pesan error belum `aria-live`.
+5. **Halaman detail lead** belum diuji mendalam (sesi uji sudah dihapus sebelum eksplorasi form status/catatan).
+6. **Dashboard**: 6 kartu statistik tanpa rentang waktu/trend, tanpa aksi cepat.
 
 ### Belum dikerjakan (butuh keputusan desain/konten)
 
 - **S1** Social proof (logo klien, testimoni, sertifikasi, angka SLA).
-- **S2** Halaman kebijakan privasi + consent form.
-- **R2** Ikon emoji vs SVG.
-- **Konten:** prefix harga tidak seragam di CMS ("Mulai dari" vs "Mulai").
-- **Admin:** area `/admin` belum diaudit (baru halaman login).
+- **Konten:** kebijakan privasi perlu ditinjau bagian retensi (24 bulan), entitas hukum, dan kontak DPO sebelum dipublikasikan sebagai final.
+- **Consent:** persetujuan belum tersimpan sebagai bukti (perlu kolom `consent_at` di tabel `leads` + migrasi).
+- **Admin:** butuh pagination leads (lihat temuan #1).
 
 ## Rekomendasi urutan perbaikan (sisa)
-1. S2 (privasi) — risiko kepatuhan, sebelum menambah trafik.
-2. S1 (social proof) — konten.
-3. R2 + copy CMS + audit `/admin`.
+1. Migrasi kolom `consent_at` + pagination leads.
+2. S1 social proof.
+3. Audit lanjutan halaman detail lead + perbaikan login (lupa password).
+
 
 

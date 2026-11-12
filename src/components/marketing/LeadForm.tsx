@@ -292,6 +292,30 @@ export function LeadForm({
         </div>
       </div>
 
+      {/* ── Consent (UU PDP No. 27/2022) ── */}
+      <div>
+        <label className="flex cursor-pointer items-start gap-2.5 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            name="consent"
+            required
+            className="mt-0.5 size-4 shrink-0 accent-brand-600"
+          />
+          <span className="leading-relaxed">
+            Saya setuju data saya diproses sesuai{' '}
+            <a
+              href="/privasi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
+            >
+              Kebijakan Privasi
+            </a>
+            .
+          </span>
+        </label>
+      </div>
+
       {/* ── Submit ── */}
       <button
         type="submit"

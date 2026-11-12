@@ -75,7 +75,7 @@ export default async function DashboardPage() {
             <TableBody>
               {recentLeads.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-slate-400 py-8">
+                  <TableCell colSpan={5} className="text-center text-slate-500 py-8">
                     Belum ada lead
                   </TableCell>
                 </TableRow>

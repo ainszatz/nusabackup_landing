@@ -45,7 +45,7 @@ export default async function SegmentsPage() {
           <TableBody>
             {segments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-slate-400 py-12">
+                <TableCell colSpan={6} className="text-center text-slate-500 py-12">
                   Belum ada segmen
                 </TableCell>
               </TableRow>
@@ -79,6 +79,7 @@ export default async function SegmentsPage() {
                   <ActiveToggle
                     id={seg.id}
                     isActive={seg.is_active}
+                    label={`Status aktif segmen ${seg.name}`}
                     onToggle={toggleSegmentActive}
                   />
                 </TableCell>
