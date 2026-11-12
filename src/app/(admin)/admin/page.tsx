@@ -19,7 +19,11 @@ function formatDate(iso: string) {
   }).format(new Date(iso))
 }
 
-export const metadata: Metadata = { title: 'Dashboard' }
+export const metadata: Metadata = {
+  // Halaman ini satu segmen dengan layout yang mendefinisikan template,
+  // jadi title-nya harus absolut agar tetap berakhiran "| Admin NusaBackup".
+  title: { absolute: 'Dashboard | Admin NusaBackup' },
+}
 
 export default async function DashboardPage() {
   const [summary, recentLeads] = await Promise.all([
