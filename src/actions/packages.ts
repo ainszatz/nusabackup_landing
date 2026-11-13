@@ -41,7 +41,13 @@ export async function upsertPackage(
   const featuresRaw = str(formData.get('features'))
   let features: { id?: string; label: string; is_included: boolean; sort_order: number }[] = []
   if (featuresRaw) {
-    const featParsed = featuresArraySchema.safeParse(JSON.parse(featuresRaw))
+    let parsedFeatures: unknown
+    try {
+      parsedFeatures = JSON.parse(featuresRaw)
+    } catch {
+      return { status: 'error', message: 'Data fitur tidak valid.' }
+    }
+    const featParsed = featuresArraySchema.safeParse(parsedFeatures)
     if (!featParsed.success)
       return { status: 'error', message: 'Data fitur tidak valid.' }
     features = featParsed.data

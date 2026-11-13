@@ -23,6 +23,9 @@ export async function proxy(request: NextRequest) {
   return supabaseResponse
 }
 
+// Only admin routes need session refresh. Running Supabase Auth on every public
+// page added a network round trip (and a hard dependency) to static marketing
+// pages for no benefit.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/admin', '/admin/:path*'],
 }

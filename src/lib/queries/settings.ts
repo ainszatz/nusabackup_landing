@@ -29,21 +29,3 @@ export const getPublicSettings = unstable_cache(
   ['public-settings'],
   { tags: ['settings'] }
 )
-
-export const getAllSettings = unstable_cache(
-  async (): Promise<PublicSettings> => {
-    const supabase = createPublicClient()
-    const { data, error } = await supabase
-      .from('site_settings')
-      .select('key, value')
-    if (error) throw new Error(error.message)
-    const settings: PublicSettings = {}
-    for (const row of data ?? []) {
-      settings[row.key] =
-        typeof row.value === 'string' ? row.value : String(row.value)
-    }
-    return settings
-  },
-  ['all-settings'],
-  { tags: ['settings'] }
-)
