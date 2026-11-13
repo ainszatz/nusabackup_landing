@@ -13,12 +13,17 @@ export type ActivityRow = Database['public']['Tables']['lead_activities']['Row']
 
 export async function getLeadStatusSummary(): Promise<Partial<Record<LeadStatus, number>>> {
   const supabase = await createClient()
-  const { data } = await supabase.from('leads').select('status')
-  if (!data) return {}
-  return data.reduce<Partial<Record<LeadStatus, number>>>((acc, { status }) => {
-    acc[status] = (acc[status] ?? 0) + 1
-    return acc
-  }, {})
+  // One HEAD count per status instead of loading every lead row into memory.
+  const entries = await Promise.all(
+    LEAD_STATUSES.map(async ({ value }) => {
+      const { count } = await supabase
+        .from('leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', value)
+      return [value, count ?? 0] as const
+    })
+  )
+  return Object.fromEntries(entries) as Partial<Record<LeadStatus, number>>
 }
 
 export async function getRecentLeads(limit = 10) {

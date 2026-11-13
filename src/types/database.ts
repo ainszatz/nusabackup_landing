@@ -63,6 +63,8 @@ export type Database = {
       leads: {
         Row: {
           admin_notes: string | null
+          consent_at: string | null
+          consent_version: string | null
           created_at: string
           email: string | null
           id: string
@@ -82,6 +84,8 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          consent_at?: string | null
+          consent_version?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -101,6 +105,8 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          consent_at?: string | null
+          consent_version?: string | null
           created_at?: string
           email?: string | null
           id?: string

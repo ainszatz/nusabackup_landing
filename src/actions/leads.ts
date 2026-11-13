@@ -1,16 +1,16 @@
 'use server'
 
-import { headers } from 'next/headers'
-import { createHash } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { leadSchema } from '@/lib/validations/lead'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { verifyStaff } from '@/lib/server/verify-staff'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { getClientIpHash } from '@/lib/request-ip'
+import { CONSENT_VERSION } from '@/lib/consent'
 import { sendLeadEmail } from '@/lib/notifications/email'
 import { sendLeadWhatsApp } from '@/lib/notifications/whatsapp'
-import type { LeadStatus } from '@/lib/leads-config'
+import { LEAD_STATUSES, type LeadStatus } from '@/lib/leads-config'
 
 export type AdminActionState =
   | { status: 'success'; message: string }
@@ -25,6 +25,9 @@ export async function updateLeadStatus(
   const newStatus = formData.get('newStatus') as string | null
 
   if (!leadId || !newStatus) return { status: 'error', message: 'Data tidak valid.' }
+  if (!LEAD_STATUSES.some((entry) => entry.value === newStatus)) {
+    return { status: 'error', message: 'Status tidak valid.' }
+  }
 
   const staff = await verifyStaff()
   if (!staff) return { status: 'error', message: 'Anda tidak memiliki akses.' }
@@ -100,9 +103,10 @@ export async function submitLead(
   formData: FormData
 ): Promise<SubmitLeadState> {
   // 1. Honeypot — must be empty; any other value means bot.
-  //    Return fake success to avoid tipping off bots.
+  //    Return fake success to avoid tipping off bots. A missing field is not a
+  //    bot signal (formData.get returns null), so only strings are checked.
   const honeypot = formData.get('website')
-  if (honeypot !== '') {
+  if (typeof honeypot === 'string' && honeypot !== '') {
     return { status: 'success', message: 'Terima kasih, pesan Anda telah dikirim.' }
   }
 
@@ -129,14 +133,8 @@ export async function submitLead(
 
   const data = parsed.data
 
-  // 3. Rate limit — IP hash from Cloudflare Tunnel header.
-  const headersList = await headers()
-  const rawIp =
-    headersList.get('CF-Connecting-IP') ??
-    headersList.get('x-forwarded-for') ??
-    '127.0.0.1'
-  const ip = rawIp.split(',')[0].trim()
-  const ipHash = createHash('sha256').update(ip).digest('hex').slice(0, 16)
+  // 3. Rate limit — short, non-reversible client identifier.
+  const ipHash = await getClientIpHash()
 
   const { allowed } = checkRateLimit(ipHash)
   if (!allowed) {
@@ -163,10 +161,6 @@ export async function submitLead(
       package_name: data.package_name ?? null,
       ip_hash: ipHash,
       source: 'web',
-      // Bukti persetujuan (UU PDP No. 27/2022) dicatat saat lead dibuat.
-      // Kolom khusus (consent_at/consent_version) menyusul lewat migrasi;
-      // sementara disimpan di admin_notes agar tidak hilang dan terbaca staf.
-      admin_notes: `Persetujuan Kebijakan Privasi diterima pada ${new Date().toISOString()}.`,
     })
     .select(
       'id, name, organization, email, phone, message, segment_name, package_name, preferred_channel, created_at'
@@ -178,7 +172,29 @@ export async function submitLead(
     return { status: 'error', message: 'Gagal menyimpan pesan. Silakan coba lagi.' }
   }
 
-  // 5. Fail-soft notifications in parallel.
+  // 5. Consent evidence (UU PDP No. 27/2022). Written to dedicated columns by
+  //    migration 20261113000001. Until that migration is applied the update
+  //    fails, so fall back to admin_notes rather than dropping the evidence.
+  const consentAt = new Date().toISOString()
+  const { error: consentError } = await supabase
+    .from('leads')
+    .update({ consent_at: consentAt, consent_version: CONSENT_VERSION })
+    .eq('id', lead.id)
+
+  if (consentError) {
+    console.warn(
+      '[leads] consent columns unavailable, storing evidence in admin_notes:',
+      consentError.message
+    )
+    await supabase
+      .from('leads')
+      .update({
+        admin_notes: `Persetujuan Kebijakan Privasi diterima pada ${consentAt}.`,
+      })
+      .eq('id', lead.id)
+  }
+
+  // 6. Fail-soft notifications in parallel.
   //    Insert is NOT rolled back if these fail.
   await Promise.allSettled([
     sendLeadEmail(lead),
