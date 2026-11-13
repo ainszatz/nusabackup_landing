@@ -141,12 +141,16 @@ export function Footer({ settings }: FooterProps) {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-xs">
+          <p className="text-slate-400 text-xs">
             &copy; {new Date().getFullYear()} NusaBackup. Seluruh hak dilindungi.
           </p>
-          <p className="text-slate-600 text-xs">
-            Layanan backup offsite &amp; disaster recovery Indonesia
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-slate-400">
+            <Link href="/privasi" className="hover:text-white transition-colors">
+              Kebijakan Privasi
+            </Link>
+            <span aria-hidden>·</span>
+            <span>Backup offsite &amp; disaster recovery Indonesia</span>
+          </div>
         </div>
       </div>
     </footer>

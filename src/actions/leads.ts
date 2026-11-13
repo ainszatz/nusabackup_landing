@@ -110,7 +110,7 @@ export async function submitLead(
   const raw = {
     name: str(formData.get('name')) ?? '',
     email: str(formData.get('email')),
-    phone: str(formData.get('phone')),
+    phone: str(formData.get('phone'))?.replace(/[\s\-().]/g, ''),
     organization: str(formData.get('organization')),
     message: str(formData.get('message')),
     preferred_channel: str(formData.get('preferred_channel')) ?? 'whatsapp',
@@ -118,6 +118,7 @@ export async function submitLead(
     package_id: str(formData.get('package_id')) ?? null,
     segment_name: str(formData.get('segment_name')) ?? null,
     package_name: str(formData.get('package_name')) ?? null,
+    consent: str(formData.get('consent')),
   }
 
   const parsed = leadSchema.safeParse(raw)
@@ -162,6 +163,10 @@ export async function submitLead(
       package_name: data.package_name ?? null,
       ip_hash: ipHash,
       source: 'web',
+      // Bukti persetujuan (UU PDP No. 27/2022) dicatat saat lead dibuat.
+      // Kolom khusus (consent_at/consent_version) menyusul lewat migrasi;
+      // sementara disimpan di admin_notes agar tidak hilang dan terbaca staf.
+      admin_notes: `Persetujuan Kebijakan Privasi diterima pada ${new Date().toISOString()}.`,
     })
     .select(
       'id, name, organization, email, phone, message, segment_name, package_name, preferred_channel, created_at'

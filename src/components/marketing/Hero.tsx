@@ -1,9 +1,17 @@
 import Link from 'next/link'
+import { Lock, Zap, ShieldCheck, MapPin } from 'lucide-react'
 import type { PublicSettings } from '@/types'
 
 interface HeroProps {
   settings: PublicSettings
 }
+
+const TRUST_SIGNALS = [
+  { Icon: Lock, text: 'Enkripsi AES-256' },
+  { Icon: Zap, text: 'Backup otomatis setiap jam' },
+  { Icon: ShieldCheck, text: 'RTO / RPO terukur' },
+  { Icon: MapPin, text: 'Server Indonesia' },
+]
 
 export function Hero({ settings }: HeroProps) {
   const waNumber = settings.wa_number ?? ''
@@ -48,7 +56,7 @@ export function Hero({ settings }: HeroProps) {
           {/* Eyebrow tag */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-600/20 border border-brand-600/30 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" aria-hidden />
-            <span className="text-brand-500 text-xs font-semibold tracking-wide uppercase">
+            <span className="text-brand-300 text-xs font-semibold tracking-wide uppercase">
               Offsite Backup &amp; Disaster Recovery
             </span>
           </div>
@@ -99,16 +107,11 @@ export function Hero({ settings }: HeroProps) {
           </div>
 
           {/* Trust signals */}
-          <div className="mt-14 flex flex-wrap items-center gap-6 text-slate-400 text-sm">
-            {[
-              { icon: '🔒', text: 'Enkripsi AES-256' },
-              { icon: '⚡', text: 'Backup otomatis setiap jam' },
-              { icon: '🛡️', text: 'RTO / RPO terukur' },
-              { icon: '🇮🇩', text: 'Server Indonesia' },
-            ].map((t) => (
-              <span key={t.text} className="flex items-center gap-1.5">
-                <span aria-hidden>{t.icon}</span>
-                {t.text}
+          <div className="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3 text-slate-300 text-sm">
+            {TRUST_SIGNALS.map(({ Icon, text }) => (
+              <span key={text} className="flex items-center gap-2">
+                <Icon size={15} strokeWidth={2} className="text-brand-300" aria-hidden />
+                {text}
               </span>
             ))}
           </div>

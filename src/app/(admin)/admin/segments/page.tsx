@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,8 @@ import { SegmentDeleteButton } from './SegmentDeleteButton'
 import { ActiveToggle } from '@/components/admin/ActiveToggle'
 import { getAllSegments } from '@/lib/queries/segments'
 import { toggleSegmentActive } from '@/actions/segments'
+
+export const metadata: Metadata = { title: 'Segmen' }
 
 export default async function SegmentsPage() {
   const segments = await getAllSegments()
@@ -31,7 +34,7 @@ export default async function SegmentsPage() {
       </div>
 
       <div className="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-        <Table>
+        <Table aria-label="Daftar segmen">
           <TableHeader>
             <TableRow>
               <TableHead>Icon</TableHead>
@@ -45,7 +48,7 @@ export default async function SegmentsPage() {
           <TableBody>
             {segments.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-slate-400 py-12">
+                <TableCell colSpan={6} className="text-center text-slate-500 py-12">
                   Belum ada segmen
                 </TableCell>
               </TableRow>
@@ -79,6 +82,7 @@ export default async function SegmentsPage() {
                   <ActiveToggle
                     id={seg.id}
                     isActive={seg.is_active}
+                    label={`Status aktif segmen ${seg.name}`}
                     onToggle={toggleSegmentActive}
                   />
                 </TableCell>

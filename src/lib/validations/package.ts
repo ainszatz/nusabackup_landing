@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizePricePrefix } from '@/lib/format-price'
 
 export const featureSchema = z.object({
   id: z.string().uuid().optional(),
@@ -34,7 +35,11 @@ export const packageSchema = z.object({
     .nullish()
     .transform((v) => v === undefined || v === null || (v !== false && v !== 'false')),
   sort_order: z.coerce.number().int().min(0).default(0),
-  price_prefix: z.string().max(50).optional(),
+  price_prefix: z
+    .string()
+    .max(50)
+    .optional()
+    .transform((v) => normalizePricePrefix(v) ?? undefined),
   price_amount: z.coerce.number().min(0).nullable().optional(),
   price_period: z.string().max(50).optional(),
   currency: z.string().max(10).optional(),

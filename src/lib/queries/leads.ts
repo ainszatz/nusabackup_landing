@@ -31,12 +31,45 @@ export async function getRecentLeads(limit = 10) {
   return data ?? []
 }
 
-export async function getLeadsFiltered({ status, q }: { status?: string; q?: string }) {
+export type LeadsPageResult = {
+  rows: Array<{
+    id: string
+    name: string
+    organization: string | null
+    email: string | null
+    phone: string | null
+    package_name: string | null
+    segment_name: string | null
+    status: LeadStatus
+    preferred_channel: string
+    created_at: string
+  }>
+  total: number
+  page: number
+  pageSize: number
+  pageCount: number
+}
+
+export async function getLeadsFiltered({
+  status,
+  q,
+  page = 1,
+  pageSize = 25,
+}: {
+  status?: string
+  q?: string
+  page?: number
+  pageSize?: number
+}): Promise<LeadsPageResult> {
   const supabase = await createClient()
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+  const from = (safePage - 1) * pageSize
+
   let query = supabase
     .from('leads')
     .select(
-      'id, name, organization, email, phone, package_name, segment_name, status, preferred_channel, created_at'
+      'id, name, organization, email, phone, package_name, segment_name, status, preferred_channel, created_at',
+      { count: 'exact' }
     )
     .order('created_at', { ascending: false })
 
@@ -49,8 +82,16 @@ export async function getLeadsFiltered({ status, q }: { status?: string; q?: str
     query = query.or(`name.ilike.%${safe}%,organization.ilike.%${safe}%`)
   }
 
-  const { data } = await query
-  return data ?? []
+  const { data, count } = await query.range(from, from + pageSize - 1)
+
+  const total = count ?? data?.length ?? 0
+  return {
+    rows: (data ?? []) as LeadsPageResult['rows'],
+    total,
+    page: safePage,
+    pageSize,
+    pageCount: Math.max(1, Math.ceil(total / pageSize)),
+  }
 }
 
 export async function getLeadWithActivities(id: string) {

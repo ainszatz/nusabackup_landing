@@ -47,7 +47,22 @@ export async function buildSegmentMetadata(slug: string): Promise<Metadata> {
       type: 'website',
       url: `${SITE_URL}/${slug}`,
       siteName: 'NusaBackup',
+      images: [
+        {
+          url: '/og.png',
+          width: 1200,
+          height: 630,
+          alt: segment?.meta_title ?? fallbackTitle,
+        },
+      ],
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: segment?.meta_title ?? fallbackTitle,
+      description: segment?.meta_description ?? fallbackDesc,
+      images: ['/og.png'],
+    },
+    alternates: { canonical: `${SITE_URL}/${slug}` },
   }
 }
 
@@ -219,7 +234,13 @@ export async function SegmentPageContent({ slug }: { slug: string }) {
               }`}
             >
               {packages.map((pkg) => (
-                <PackageCard key={pkg.id} pkg={pkg} waNumber={waNumber} />
+                <PackageCard
+                  key={pkg.id}
+                  pkg={pkg}
+                  waNumber={waNumber}
+                  showFeaturedBadge={packages.filter((p) => p.is_featured).length === 1}
+                  showSegmentTag={false}
+                />
               ))}
             </div>
           ) : (

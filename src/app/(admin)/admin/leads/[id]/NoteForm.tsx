@@ -33,10 +33,10 @@ export function NoteForm({ leadId }: { leadId: string }) {
       </div>
 
       {state?.status === 'error' && (
-        <p className="text-sm text-red-600">{state.message}</p>
+        <p role="alert" className="text-sm text-red-700">{state.message}</p>
       )}
       {state?.status === 'success' && (
-        <p className="text-sm text-green-600">{state.message}</p>
+        <p role="status" className="text-sm text-green-700">{state.message}</p>
       )}
 
       <Button type="submit" disabled={pending} size="sm">

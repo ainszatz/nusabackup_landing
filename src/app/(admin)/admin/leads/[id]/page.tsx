@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, MessageSquare, RefreshCw } from 'lucide-react'
@@ -18,6 +19,8 @@ function formatDate(iso: string) {
     minute: '2-digit',
   }).format(new Date(iso))
 }
+
+export const metadata: Metadata = { title: 'Detail Lead' }
 
 function DetailRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null
@@ -116,7 +119,7 @@ export default async function LeadDetailPage({
                         <Icon className="size-3 text-slate-500" />
                       </span>
                       <div>
-                        <p className="text-xs text-slate-400">{formatDate(activity.created_at)}</p>
+                        <p className="text-xs text-slate-500">{formatDate(activity.created_at)}</p>
                         {activity.profiles?.full_name && (
                           <p className="text-xs font-medium text-slate-600">
                             {activity.profiles.full_name}

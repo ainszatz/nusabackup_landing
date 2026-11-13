@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -16,6 +17,12 @@ function formatDate(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(iso))
+}
+
+export const metadata: Metadata = {
+  // Halaman ini satu segmen dengan layout yang mendefinisikan template,
+  // jadi title-nya harus absolut agar tetap berakhiran "| Admin NusaBackup".
+  title: { absolute: 'Dashboard | Admin NusaBackup' },
 }
 
 export default async function DashboardPage() {
@@ -62,7 +69,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <div className="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-          <Table>
+          <Table aria-label="Lead terbaru">
             <TableHeader>
               <TableRow>
                 <TableHead>Nama</TableHead>
@@ -75,7 +82,7 @@ export default async function DashboardPage() {
             <TableBody>
               {recentLeads.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-slate-400 py-8">
+                  <TableCell colSpan={5} className="text-center text-slate-500 py-8">
                     Belum ada lead
                   </TableCell>
                 </TableRow>

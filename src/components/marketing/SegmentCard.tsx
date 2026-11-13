@@ -1,29 +1,30 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Building2, GraduationCap, HeartPulse, type LucideIcon } from 'lucide-react'
 import type { Segment } from '@/types'
 
 interface SegmentCardProps {
   segment: Segment
 }
 
-const SEGMENT_META: Record<string, { color: string; border: string; bg: string; emoji: string }> = {
+const SEGMENT_META: Record<string, { color: string; border: string; bg: string; Icon: LucideIcon }> = {
   umum: {
     color: 'text-brand-600',
     border: 'border-brand-600',
     bg: 'bg-brand-50',
-    emoji: '🏢',
+    Icon: Building2,
   },
   pendidikan: {
     color: 'text-emerald-600',
     border: 'border-emerald-500',
     bg: 'bg-emerald-50',
-    emoji: '🎓',
+    Icon: GraduationCap,
   },
   kesehatan: {
     color: 'text-rose-600',
     border: 'border-rose-500',
     bg: 'bg-rose-50',
-    emoji: '⚕️',
+    Icon: HeartPulse,
   },
 }
 
@@ -52,9 +53,7 @@ export function SegmentCard({ segment }: SegmentCardProps) {
             className="object-contain"
           />
         ) : (
-          <span className="text-2xl" role="img" aria-label={segment.name}>
-            {meta.emoji}
-          </span>
+          <meta.Icon className={`size-6 ${meta.color}`} aria-hidden />
         )}
       </div>
 

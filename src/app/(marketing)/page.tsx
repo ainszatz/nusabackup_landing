@@ -26,7 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       url: SITE_URL,
       siteName: 'NusaBackup',
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: title }],
     },
+    twitter: { card: 'summary_large_image', title, description, images: ['/og.png'] },
+    alternates: { canonical: SITE_URL },
   }
 }
 
@@ -134,7 +137,12 @@ export default async function HomePage() {
                 : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
             }`}>
               {featuredPackages.map((pkg) => (
-                <PackageCard key={pkg.id} pkg={pkg} waNumber={waNumber} />
+                <PackageCard
+                  key={pkg.id}
+                  pkg={pkg}
+                  waNumber={waNumber}
+                  showFeaturedBadge={featuredPackages.filter((p) => p.is_featured).length === 1}
+                />
               ))}
             </div>
           ) : (
@@ -167,7 +175,7 @@ export default async function HomePage() {
       >
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-14">
-            <span className="inline-block text-xs font-semibold text-brand-500 uppercase tracking-widest mb-3">
+            <span className="inline-block text-xs font-semibold text-brand-300 uppercase tracking-widest mb-3">
               Kenapa NusaBackup
             </span>
             <h2
@@ -247,7 +255,7 @@ export default async function HomePage() {
           >
             Siap melindungi data Anda?
           </h2>
-          <p className="text-brand-100 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-brand-50 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
             Mulai dengan konsultasi gratis. Tim kami akan membantu merancang solusi backup
             yang sesuai skala dan kebutuhan bisnis Anda.
           </p>

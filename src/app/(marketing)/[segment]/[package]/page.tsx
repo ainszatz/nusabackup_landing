@@ -6,6 +6,7 @@ import { getPackageBySlug, getAllActivePackages } from '@/lib/queries/packages'
 import { getPublicSettings } from '@/lib/queries/settings'
 import { JsonLd } from '@/components/marketing/JsonLd'
 import { LeadFormModal } from '@/components/marketing/LeadFormModal'
+import { normalizePricePrefix } from '@/lib/format-price'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nusabackup.id'
 
@@ -25,7 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pkg = await getPackageBySlug(segSlug, pkgSlug)
   if (!pkg) return { title: 'Paket Tidak Ditemukan' }
 
-  const title = `${pkg.name} | ${pkg.segment?.name ?? ''} — NusaBackup`
+  const title = pkg.segment?.name
+    ? `${pkg.name} — ${pkg.segment.name} | NusaBackup`
+    : `${pkg.name} | NusaBackup`
   const description =
     pkg.description ?? `Paket ${pkg.name} dari NusaBackup untuk segmen ${pkg.segment?.name ?? ''}.`
 
@@ -38,14 +41,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       url: `${SITE_URL}/${segSlug}/${pkgSlug}`,
       siteName: 'NusaBackup',
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: title }],
     },
+    twitter: { card: 'summary_large_image', title, description, images: ['/og.png'] },
+    alternates: { canonical: `${SITE_URL}/${segSlug}/${pkgSlug}` },
   }
 }
 
 function formatPrice(amount: number): string {
   if (amount >= 1_000_000) {
-    const juta = amount / 1_000_000
-    return `Rp ${juta % 1 === 0 ? juta.toFixed(0) : juta.toFixed(1)} juta`
+    const juta = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 }).format(
+      amount / 1_000_000
+    )
+    return `Rp ${juta} juta`
   }
   return `Rp ${new Intl.NumberFormat('id-ID').format(amount)}`
 }
@@ -60,6 +68,7 @@ export default async function PackageDetailPage({ params }: Props) {
   if (!pkg) notFound()
 
   const waNumber = settings.wa_number ?? ''
+  const pricePrefix = normalizePricePrefix(pkg.price_prefix)
   const contactEmail = settings.email ?? ''
   const waText = `Halo NusaBackup, saya tertarik dengan paket *${pkg.name}* (${pkg.segment?.name ?? ''}). Boleh saya mendapat informasi lebih lanjut?`
   const waHref = waNumber
@@ -140,7 +149,7 @@ export default async function PackageDetailPage({ params }: Props) {
                   </span>
                 )}
                 {pkg.is_featured && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold-500 text-white text-xs font-bold">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold-500 text-navy-950 text-xs font-bold">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
@@ -168,8 +177,8 @@ export default async function PackageDetailPage({ params }: Props) {
               <div className="flex items-baseline gap-2 mb-8">
                 {pkg.price_amount != null ? (
                   <>
-                    {pkg.price_prefix && (
-                      <span className="text-slate-400 text-sm">{pkg.price_prefix}</span>
+                    {pricePrefix && (
+                      <span className="text-slate-400 text-sm">{pricePrefix}</span>
                     )}
                     <span className="font-display font-extrabold text-3xl sm:text-4xl text-white">
                       {formatPrice(pkg.price_amount)}
@@ -180,7 +189,7 @@ export default async function PackageDetailPage({ params }: Props) {
                   </>
                 ) : (
                   <span className="font-display font-extrabold text-3xl text-white">
-                    {pkg.price_prefix ?? 'Hubungi kami untuk harga'}
+                    {pricePrefix ?? 'Hubungi kami untuk harga'}
                   </span>
                 )}
               </div>
@@ -257,9 +266,11 @@ export default async function PackageDetailPage({ params }: Props) {
             >
               Yang termasuk dalam paket ini
             </h2>
-            <span className="text-sm text-slate-400">
-              {includedCount} dari {features.length} fitur
-            </span>
+            {includedCount < features.length && (
+              <span className="text-sm text-slate-500">
+                {includedCount} dari {features.length} fitur
+              </span>
+            )}
           </div>
 
           {features.length > 0 ? (
