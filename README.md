@@ -56,12 +56,18 @@ cp .env.example .env.production
 ### 2. Build & jalankan container
 
 ```bash
-docker compose up -d --build
+docker compose --env-file .env.production up -d --build
 # Site berjalan di port 3000
 ```
 
-> `--build` wajib. `docker compose up` tanpa `--build` (atau `restart`) memakai
-> image lama, jadi perubahan kode tidak akan muncul di situs.
+> `--env-file .env.production` wajib. `env_file:` di `docker-compose.yml` hanya
+> menyuntikkan variabel saat container berjalan; **build args** (`NEXT_PUBLIC_*`
+> yang di-bake ke bundle client) dibaca dari environment interpolasi Compose.
+> Tanpa `--env-file`, nilainya kosong dan build akan berhenti dengan pesan
+> `set NEXT_PUBLIC_...`.
+>
+> `--build` juga wajib. `docker compose up` tanpa `--build` (atau `restart`)
+> memakai image lama, jadi perubahan kode tidak akan muncul di situs.
 
 ### 3. Cloudflare Tunnel
 
