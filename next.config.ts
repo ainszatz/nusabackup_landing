@@ -10,7 +10,18 @@ function getSupabaseHostname(): string {
   }
 }
 
+function getAllowedDevOrigins(): string[] | undefined {
+  const raw = process.env.ALLOWED_DEV_ORIGINS
+  if (!raw) return undefined
+  const origins = raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+  return origins.length > 0 ? origins : undefined
+}
+
 const supabaseHostname = getSupabaseHostname()
+const allowedDevOrigins = getAllowedDevOrigins()
 
 // React Fast Refresh / Turbopack need eval in development only. Production
 // builds do not, so keep the weaker directive out of the shipped CSP.
@@ -22,6 +33,9 @@ const scriptSrc = isDev
 const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
+  // Dev-only: extra origins (e.g. a Tailscale hostname) allowed to reach the
+  // dev server. Ignored in production, so it never affects the live site.
+  ...(allowedDevOrigins ? { allowedDevOrigins } : {}),
   images: {
     remotePatterns: supabaseHostname
       ? [
