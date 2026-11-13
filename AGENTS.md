@@ -75,10 +75,14 @@ docker compose --env-file .env.production up -d --build
 `--env-file` wajib: build args `NEXT_PUBLIC_*` dibaca dari environment
 interpolasi Compose, bukan dari `env_file` runtime.
 
-## Catatan migrasi tertunda
+## Migrasi database
+
+Kedua migrasi sudah diterapkan ke project `jskugzbbohcvamscvpkd` pada
+13 November 2026:
 
 - `20261113000001_add_lead_consent_columns.sql` — kolom `consent_at` /
-  `consent_version`. Kode punya fallback ke `admin_notes`, tetapi migrasi harus
-  diterapkan agar bukti consent tersimpan terstruktur.
+  `consent_version`.
 - `20261113000002_restrict_package_features_read.sql` — anon tidak lagi membaca
   fitur paket nonaktif.
+
+Regenerate `src/types/database.ts` setelah setiap perubahan schema.

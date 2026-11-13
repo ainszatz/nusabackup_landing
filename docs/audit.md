@@ -13,10 +13,10 @@ Legenda: **CLEAR** = sudah diperbaiki & diverifikasi · **OPEN** = belum dikerja
 
 | Area | Clear | Open | Blocked |
 |---|---|---|---|
-| Marketing publik | 20 | 5 | 1 |
+| Marketing publik | 20 | 5 | 0 |
 | Admin | 14 | 7 | 0 |
 | Deploy / infra | 6 | 1 | 0 |
-| Hardening keamanan & kualitas | 9 | 1 | 2 |
+| Hardening keamanan & kualitas | 11 | 1 | 0 |
 
 Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa teks < 12 px, satu `<h1>` per halaman, `lang="id"`, skip-link, `prefers-reduced-motion`, TTFB ~93 ms, LCP ~224 ms. Build produksi bersih (0 error lint/TS), 9 unit test lulus, dan 8 halaman detail paket tetap ter-prerender.
 
@@ -49,14 +49,13 @@ Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa t
 | M19 | Deskripsi kartu terpotong di tengah kata (“…”) | Clamp 3 baris + `min-h` setinggi 3 baris; 4 baris di < 360 px | 320/390/768/1440: tidak terpotong, harga tetap sejajar |
 | M20 | Isian form hilang setelah error validasi (React reset form action) | Snapshot nilai saat submit + restore setelah error (termasuk checkbox) | Nama/telepon/instansi tetap terisi |
 
-### OPEN / BLOCKED
+### OPEN
 
 1. **OPEN — Social proof**: belum ada logo klien, testimoni, studi kasus, sertifikasi (ISO 27001/UU PDP), atau angka SLA/RTO-RPO konkret. *Dampak terbesar; butuh materi dari pemilik bisnis.*
 2. **OPEN — Tinjauan isi kebijakan privasi**: `/privasi` sudah lengkap secara struktur, tapi bagian **retensi 24 bulan, entitas hukum, kontak DPO** perlu dipastikan sebelum dianggap final.
-3. **BLOCKED — Penerapan migrasi consent**: migrasi `20261113000001_add_lead_consent_columns.sql` dan kode penulisan `consent_at`/`consent_version` sudah siap (dengan fallback ke `admin_notes`), tetapi kolom belum ada di database produksi. Jalankan `supabase db push` sebelum deploy.
-4. **OPEN — `og:image`** masih satu gambar generik untuk semua URL (belum per segmen/paket).
-5. **OPEN — Sisa tap target < 44 px**: tautan teks kartu (24–32 px, masih lolos minimum 24 px WCAG 2.5.8).
-6. **OPEN — Belum pernah diuji**: Lighthouse penuh, screen reader nyata (NVDA/VoiceOver), visual regression.
+3. **OPEN — `og:image`** masih satu gambar generik untuk semua URL (belum per segmen/paket).
+4. **OPEN — Sisa tap target < 44 px**: tautan teks kartu (24–32 px, masih lolos minimum 24 px WCAG 2.5.8).
+5. **OPEN — Belum pernah diuji**: Lighthouse penuh, screen reader nyata (NVDA/VoiceOver), visual regression.
 
 ---
 
@@ -130,11 +129,8 @@ Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehing
 | H7 | Unit test | 9 test `node:test` untuk `leadSchema` dan `normalizePricePrefix`; script `pnpm test` | `tests/unit/*`, `package.json` |
 | H8 | Tooling lokal | `node_modules` disinkronkan dengan pnpm 11.7.0; `allowImportingTsExtensions` untuk test | `tsconfig.json` |
 | H9 | Dokumen agen | `AGENTS.md` menjadi sumber aturan proyek (update Next 16); `CLAUDE.md` menjadi bridge `@AGENTS.md` | `AGENTS.md`, `CLAUDE.md` |
-
-### BLOCKED
-
-1. **Kolom consent** — migrasi `20261113000001_add_lead_consent_columns.sql` belum diterapkan ke database. Kode sudah menulis kolom baru dan otomatis fallback ke `admin_notes` bila kolom belum ada.
-2. **RLS fitur paket** — migrasi `20261113000002_restrict_package_features_read.sql` belum diterapkan. Setelah aktif, anon tidak bisa membaca fitur paket nonaktif (`is_active = false`); staff tetap melihat semua.
+| H10 | Migrasi consent diterapkan | `consent_at timestamptz` + `consent_version text` aktif di produksi; diverifikasi via `information_schema` dan PostgREST | `supabase/migrations/20261113000001_add_lead_consent_columns.sql` |
+| H11 | RLS fitur paket diterapkan | Policy `read active package features` aktif; policy lama `read package features` sudah tidak ada. Diverifikasi via `pg_policies` | `supabase/migrations/20261113000002_restrict_package_features_read.sql` |
 
 ### OPEN
 
@@ -145,15 +141,18 @@ Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehing
 ## 5. Verifikasi yang dijalankan
 
 - `pnpm lint` → **0 error, 0 warning**.
-- `pnpm exec tsc --noEmit` → **0 error**.
+- `pnpm exec tsc --noEmit` → **0 error** (setelah types digenerate ulang).
 - `pnpm test` → **9/9 lulus** (200–250 ms).
 - `pnpm build` → **sukses**, 19 rute; 8 halaman detail paket ter-prerender (SSG).
+- `supabase db push --remote --yes` → 2 migrasi diterapkan. Histori migrasi remote direkonsiliasi lebih dulu (3 versi lama ↔ 3 versi lokal) tanpa menjalankan ulang `initial_schema`.
+- `supabase db query --read-only` → `consent_at timestamptz` + `consent_version text` ada; `pg_policies` hanya memuat `read active package features` + `staff manage features`; RLS `leads` & `package_features` = true.
+- `supabase gen types` → `src/types/database.ts` digenerate ulang dari schema produksi.
 - `next start` (port 3101) → HTTP 200 dengan header:
   - CSP produksi **tanpa** `unsafe-eval`
   - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
   - `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()`
   - `X-Powered-By` tidak ada
-- Live `https://nusabackup.id` (13 Nov): 200 via Cloudflare, `/privasi` 200, `/admin` → 307 login, `og.png` 200, marker build terbaru ada.
+- Live `https://nusabackup.id` (13 Nov): 200 via Cloudflare, `/privasi` 200, `/admin` → 307 login, `og.png` 200, marker build terbaru ada. `/umum` tetap 200 dan menampilkan fitur/harga setelah perubahan RLS.
 - Browser: audit terakhir 11 November (320/360/390/768/1024/1440 px, kontras computed, urutan Tab, focus trap, Escape/klik luar). Tidak diulang pada pass ini.
 - **Tidak dijalankan:** `docker build`/`docker compose` (Docker tidak tersedia di mesin ini), Lighthouse, dan screen reader nyata.
 
@@ -170,16 +169,16 @@ fix(leads)      honeypot null-safe, validasi enum status, consent terstruktur + 
 fix(packages)   JSON.parse aman untuk data fitur
 test            unit test leadSchema + normalizePricePrefix (node:test)
 docs            AGENTS.md kanonik, CLAUDE.md bridge, audit.md diperbarui
+chore(types)    regenerate src/types/database.ts dari schema produksi
 ```
 
 ---
 
 ## 7. Urutan perbaikan berikutnya (usulan)
 
-1. **Terapkan dua migrasi** (`supabase db push`), lalu regenerate `src/types/database.ts` dengan CLI. Tanpa langkah ini bukti consent tetap jatuh ke `admin_notes` dan RLS fitur paket belum berubah.
-2. **Deploy build baru** di homelab dengan `docker compose --env-file .env.production up -d --build`, lalu cek healthcheck dan header di domain live.
-3. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
-4. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
-5. **Lighthouse & uji screen reader**, lalu pagination dengan data lead nyata.
-6. **Putuskan konsolidasi skill** Supabase (`.agents` vs `.claude`).
-7. **Pipeline deploy** otomatis (build + recreate) bila deploy manual mulai sering.
+1. **Deploy build baru** di homelab dengan `docker compose --env-file .env.production up -d --build`, lalu cek healthcheck dan header di domain live. Kedua migrasi sudah diterapkan 13 Nov 2026.
+2. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
+3. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
+4. **Lighthouse & uji screen reader**, lalu pagination dengan data lead nyata.
+5. **Putuskan konsolidasi skill** Supabase (`.agents` vs `.claude`).
+6. **Pipeline deploy** otomatis (build + recreate) bila deploy manual mulai sering.
