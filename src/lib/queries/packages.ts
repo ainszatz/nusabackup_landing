@@ -90,16 +90,16 @@ export async function getAllPackagesGrouped() {
 export const getPackageBySlug = unstable_cache(
   async (segmentSlug: string, packageSlug: string): Promise<PackageWithDetails | null> => {
     const supabase = createPublicClient()
+    // Slug is unique per segment, not globally — filtering by slug alone would
+    // make .single() fail (and the page 404) when two segments share a slug.
     const { data, error } = await supabase
       .from('packages')
       .select(PACKAGE_SELECT)
       .eq('slug', packageSlug)
       .eq('is_active', true)
-      .single()
     if (error) return null
-    const pkg = data as PackageWithDetails
-    if (pkg.segment?.slug !== segmentSlug) return null
-    return pkg
+    const packages = (data ?? []) as PackageWithDetails[]
+    return packages.find((p) => p.segment?.slug === segmentSlug) ?? null
   },
   ['package-by-slug'],
   { tags: ['packages'] }
