@@ -75,6 +75,10 @@ docker compose --env-file .env.production up -d --build
 `--env-file` wajib: build args `NEXT_PUBLIC_*` dibaca dari environment
 interpolasi Compose, bukan dari `env_file` runtime.
 
+`ALLOWED_DEV_ORIGINS` (opsional, dev-only) — daftar origin dipisah koma yang
+boleh mengakses `next dev`, misalnya hostname Tailscale. Tidak berpengaruh di
+production.
+
 ## Migrasi database
 
 Kedua migrasi sudah diterapkan ke project `jskugzbbohcvamscvpkd` pada

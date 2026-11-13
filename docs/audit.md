@@ -15,8 +15,8 @@ Legenda: **CLEAR** = sudah diperbaiki & diverifikasi · **OPEN** = belum dikerja
 |---|---|---|---|
 | Marketing publik | 20 | 5 | 0 |
 | Admin | 14 | 7 | 0 |
-| Deploy / infra | 6 | 1 | 0 |
-| Hardening keamanan & kualitas | 11 | 1 | 0 |
+| Deploy / infra | 7 | 1 | 0 |
+| Hardening keamanan & kualitas | 11 | 2 | 0 |
 
 Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa teks < 12 px, satu `<h1>` per halaman, `lang="id"`, skip-link, `prefers-reduced-motion`, TTFB ~93 ms, LCP ~224 ms. Build produksi bersih (0 error lint/TS), 9 unit test lulus, dan 8 halaman detail paket tetap ter-prerender.
 
@@ -104,13 +104,13 @@ Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa t
 | D4 | Tanpa `.dockerignore` → `node_modules` host menimpa hasil stage deps | `.dockerignore` ditambahkan |
 | D5 | Container tanpa healthcheck | `healthcheck` Node `fetch('/')`, interval 30 s, 3 retry, start period 20 s |
 | D6 | Belum ada contoh env produksi | `.env.production.example` + pengecualian `.gitignore`; README menjelaskan `--env-file` |
+| D7 | Container belum pernah diverifikasi di host | Deploy ulang image baru: container Up (healthy), healthcheck aktif, 6 halaman kunci 200, `/admin` → 307, dan header produksi terverifikasi di domain live |
 
 Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehingga build gagal cepat bila nilainya kosong, bukan membakar string kosong ke bundle client. `.env.production` dibuat dari `.env.example`/`.env.local` (gitignored, mode 600).
 
 ### OPEN
 
 1. **Pipeline deploy** — masih manual (build + recreate di host ini).
-2. **Verifikasi container** — `docker build`/`compose up` tidak dapat dijalankan di mesin pengembangan ini (Docker tidak terpasang; eksekusi `standalone server.js` di Windows gagal karena `EPERM` symlink pnpm). Healthcheck dan header perlu diverifikasi sekali di host deploy.
 
 ---
 
@@ -135,6 +135,7 @@ Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehing
 ### OPEN
 
 1. **Duplikasi skill Supabase** — `.agents/skills/supabase` dan `.claude/skills/supabase` identik byte-per-byte. Perlu keputusan sumber kanonik sebelum salah satu dihapus.
+2. **Uji RLS paket nonaktif** — belum dijalankan karena database belum punya paket `is_active = false`. Prosedur aman: buat paket + satu fitur sementara nonaktif, pastikan anon membaca 0 baris dan service-role membaca 1 baris, lalu hapus paket (fitur ikut ter-cascade).
 
 ---
 
@@ -147,6 +148,7 @@ Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehing
 - `supabase db push --remote --yes` → 2 migrasi diterapkan. Histori migrasi remote direkonsiliasi lebih dulu (3 versi lama ↔ 3 versi lokal) tanpa menjalankan ulang `initial_schema`.
 - `supabase db query --read-only` → `consent_at timestamptz` + `consent_version text` ada; `pg_policies` hanya memuat `read active package features` + `staff manage features`; RLS `leads` & `package_features` = true.
 - `supabase gen types` → `src/types/database.ts` digenerate ulang dari schema produksi.
+- Deploy host (13 Nov): image baru di-build, container **Up (healthy)**, healthcheck aktif; menu mobile dan modal tetap berfungsi di bawah CSP ketat.
 - `next start` (port 3101) → HTTP 200 dengan header:
   - CSP produksi **tanpa** `unsafe-eval`
   - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
@@ -154,7 +156,7 @@ Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehing
   - `X-Powered-By` tidak ada
 - Live `https://nusabackup.id` (13 Nov): 200 via Cloudflare, `/privasi` 200, `/admin` → 307 login, `og.png` 200, marker build terbaru ada. `/umum` tetap 200 dan menampilkan fitur/harga setelah perubahan RLS.
 - Browser: audit terakhir 11 November (320/360/390/768/1024/1440 px, kontras computed, urutan Tab, focus trap, Escape/klik luar). Tidak diulang pada pass ini.
-- **Tidak dijalankan:** `docker build`/`docker compose` (Docker tidak tersedia di mesin ini), Lighthouse, dan screen reader nyata.
+- **Tidak dijalankan di mesin Windows ini:** `docker build`/`docker compose` (Docker tidak tersedia); verifikasi container dilakukan di host deploy. Lighthouse dan screen reader nyata belum dijalankan.
 
 ---
 
@@ -167,6 +169,7 @@ fix(queries)    getPackageBySlug per segmen; status summary pakai count; hapus d
 fix(security)   CSP produksi, HSTS, Permissions-Policy, proxy /admin, rate limit login
 fix(leads)      honeypot null-safe, validasi enum status, consent terstruktur + fallback
 fix(packages)   JSON.parse aman untuk data fitur
+fix(config)     allowedDevOrigins env-driven via ALLOWED_DEV_ORIGINS (dev-only)
 test            unit test leadSchema + normalizePricePrefix (node:test)
 docs            AGENTS.md kanonik, CLAUDE.md bridge, audit.md diperbarui
 chore(types)    regenerate src/types/database.ts dari schema produksi
@@ -176,9 +179,8 @@ chore(types)    regenerate src/types/database.ts dari schema produksi
 
 ## 7. Urutan perbaikan berikutnya (usulan)
 
-1. **Deploy build baru** di homelab dengan `docker compose --env-file .env.production up -d --build`, lalu cek healthcheck dan header di domain live. Kedua migrasi sudah diterapkan 13 Nov 2026.
-2. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
-3. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
-4. **Lighthouse & uji screen reader**, lalu pagination dengan data lead nyata.
-5. **Putuskan konsolidasi skill** Supabase (`.agents` vs `.claude`).
-6. **Pipeline deploy** otomatis (build + recreate) bila deploy manual mulai sering.
+1. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
+2. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
+3. **Lighthouse & uji screen reader**, lalu pagination dengan data lead nyata.
+4. **Putuskan konsolidasi skill** Supabase (`.agents` vs `.claude`).
+5. **Pipeline deploy** otomatis (build + recreate) bila deploy manual mulai sering.
