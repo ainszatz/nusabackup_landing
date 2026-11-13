@@ -1,23 +1,24 @@
-# Audit UI/UX, Aksesibilitas & Deploy — NusaBackup
+# Audit UI/UX, Aksesibilitas, Keamanan & Deploy — NusaBackup
 
-- **Target:** `~/nusa/nusabackup_landing` + https://nusabackup.id (Docker + Cloudflare Tunnel)
+- **Target:** `E:\newProject\supernova\NusaBackup` + https://nusabackup.id (Docker + Cloudflare Tunnel)
 - **Terakhir diperbarui:** 13 November 2026
-- **Metode:** inspeksi kode + verifikasi di browser (320–1440 px) atas build produksi; pengukuran computed style/DOM, uji keyboard, uji query DB langsung. Area admin diuji dengan user sementara (dibuat lewat service role, dihapus setelah uji — `leftover=false`).
+- **Metode:** inspeksi kode, `eslint`, `tsc --noEmit`, unit test, `next build`, dan verifikasi HTTP pada server produksi lokal. Audit browser (320–1440 px, keyboard, kontras) terakhir dijalankan 11 November 2026 atas build produksi saat itu.
 - **Dokumen ini** = status terkonsolidasi. Log temuan per tanggal ada di `docs/ui-ux-audit-2026-11-11.md`.
 
-Legenda: **CLEAR** = sudah diperbaiki & diverifikasi live · **OPEN** = belum dikerjakan · **BLOCKED** = menunggu keputusan/akses.
+Legenda: **CLEAR** = sudah diperbaiki & diverifikasi · **OPEN** = belum dikerjakan · **BLOCKED** = menunggu keputusan/akses/migrasi.
 
 ---
 
 ## Ringkasan
 
-| Area | Clear | Open |
-|---|---|---|
-| Marketing publik | 20 | 6 |
-| Admin | 14 | 7 |
-| Deploy / infra | 4 | 4 |
+| Area | Clear | Open | Blocked |
+|---|---|---|---|
+| Marketing publik | 20 | 5 | 1 |
+| Admin | 14 | 7 | 0 |
+| Deploy / infra | 6 | 1 | 0 |
+| Hardening keamanan & kualitas | 9 | 1 | 2 |
 
-Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa teks < 12 px, satu `<h1>` per halaman, `lang="id"`, skip-link, `prefers-reduced-motion`, TTFB ~93 ms, LCP ~224 ms.
+Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa teks < 12 px, satu `<h1>` per halaman, `lang="id"`, skip-link, `prefers-reduced-motion`, TTFB ~93 ms, LCP ~224 ms. Build produksi bersih (0 error lint/TS), 9 unit test lulus, dan 8 halaman detail paket tetap ter-prerender.
 
 ---
 
@@ -48,15 +49,14 @@ Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa t
 | M19 | Deskripsi kartu terpotong di tengah kata (“…”) | Clamp 3 baris + `min-h` setinggi 3 baris; 4 baris di < 360 px | 320/390/768/1440: tidak terpotong, harga tetap sejajar |
 | M20 | Isian form hilang setelah error validasi (React reset form action) | Snapshot nilai saat submit + restore setelah error (termasuk checkbox) | Nama/telepon/instansi tetap terisi |
 
-### OPEN
+### OPEN / BLOCKED
 
-1. **S1 Social proof** — belum ada logo klien, testimoni, studi kasus, sertifikasi (ISO 27001/UU PDP), atau angka SLA/RTO-RPO konkret. *Dampak terbesar; butuh materi dari pemilik bisnis.*
-2. **Tinjauan isi kebijakan privasi** — `/privasi` sudah lengkap secara struktur, tapi bagian **retensi 24 bulan, entitas hukum, kontak DPO** perlu dipastikan sebelum dianggap final.
-3. **Bukti consent permanen** — saat ini ditulis ke `admin_notes` (timestamp ISO). Kolom khusus butuh migrasi:
-   `alter table public.leads add column consent_at timestamptz, add column consent_version text;`
-4. **`og:image` masih satu gambar generik** untuk semua URL (belum per segmen/paket).
-5. **Sisa tap target < 44 px** — tautan teks kartu (24–32 px, masih lolos minimum 24 px WCAG 2.5.8).
-6. **Belum pernah diuji**: Lighthouse penuh, screen reader nyata (NVDA/VoiceOver), visual regression.
+1. **OPEN — Social proof**: belum ada logo klien, testimoni, studi kasus, sertifikasi (ISO 27001/UU PDP), atau angka SLA/RTO-RPO konkret. *Dampak terbesar; butuh materi dari pemilik bisnis.*
+2. **OPEN — Tinjauan isi kebijakan privasi**: `/privasi` sudah lengkap secara struktur, tapi bagian **retensi 24 bulan, entitas hukum, kontak DPO** perlu dipastikan sebelum dianggap final.
+3. **BLOCKED — Penerapan migrasi consent**: migrasi `20261113000001_add_lead_consent_columns.sql` dan kode penulisan `consent_at`/`consent_version` sudah siap (dengan fallback ke `admin_notes`), tetapi kolom belum ada di database produksi. Jalankan `supabase db push` sebelum deploy.
+4. **OPEN — `og:image`** masih satu gambar generik untuk semua URL (belum per segmen/paket).
+5. **OPEN — Sisa tap target < 44 px**: tautan teks kartu (24–32 px, masih lolos minimum 24 px WCAG 2.5.8).
+6. **OPEN — Belum pernah diuji**: Lighthouse penuh, screen reader nyata (NVDA/VoiceOver), visual regression.
 
 ---
 
@@ -84,7 +84,7 @@ Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa t
 ### OPEN
 
 1. **Kontrol < 44 px** — switch 18 px, tombol `size="sm"`/ikon 28 px (lolos 24 px, kurang nyaman di layar sentuh).
-2. **Login**: belum ada show/hide password dan alur lupa password (reset manual lewat Supabase).
+2. **Login**: belum ada show/hide password dan alur lupa password (reset manual lewat Supabase). Rate limit login sudah ditambahkan (lihat §4).
 3. **Detail lead belum diuji end-to-end dengan sesi login** — perbaikan aria/kontras sudah masuk, tapi alur ubah status & catatan belum dijalankan penuh.
 4. **Dashboard** — 6 kartu statistik tanpa rentang waktu/trend dan tanpa aksi cepat.
 5. **Audit log CMS** — perubahan paket/segmen/pengaturan tidak mencatat pelaku.
@@ -99,52 +99,87 @@ Kualitas dasar yang sudah baik: tanpa overflow horizontal 320–1440 px, tanpa t
 
 | # | Temuan | Perbaikan |
 |---|---|---|
-| D1 | “Deploy ulang” tidak mengubah situs | Penyebab: container hanya di-restart; image 2 bulan lama. Prosedur benar: `docker compose up -d --build` |
+| D1 | “Deploy ulang” tidak mengubah situs | Penyebab: container hanya di-restart; image 2 bulan lama. Prosedur benar: `docker compose --env-file .env.production up -d --build` |
 | D2 | `docker build` gagal — `ERR_PNPM_IGNORED_BUILDS` | `pnpm-workspace.yaml` ikut di-COPY sebelum `pnpm install` |
 | D3 | `ERR_UNKNOWN_BUILTIN_MODULE` saat install | Base image `node:22-alpine` + `packageManager: pnpm@11.7.0` |
 | D4 | Tanpa `.dockerignore` → `node_modules` host menimpa hasil stage deps | `.dockerignore` ditambahkan |
+| D5 | Container tanpa healthcheck | `healthcheck` Node `fetch('/')`, interval 30 s, 3 retry, start period 20 s |
+| D6 | Belum ada contoh env produksi | `.env.production.example` + pengecualian `.gitignore`; README menjelaskan `--env-file` |
 
-Tambahan: `.env.production` dibuat dari `.env.example`/`.env.local` (gitignored, mode 600), README diperbaiki (nama file env + catatan `--build` wajib).
+Tambahan: build args `NEXT_PUBLIC_*` sekarang memakai guard `${VAR:?…}` sehingga build gagal cepat bila nilainya kosong, bukan membakar string kosong ke bundle client. `.env.production` dibuat dari `.env.example`/`.env.local` (gitignored, mode 600).
 
 ### OPEN
 
-1. **Healthcheck** di `docker-compose.yml` (status “up” saat ini hanya berarti proses hidup).
-2. **Pipeline deploy** — masih manual (build + recreate di host ini).
-3. **`.env.production.example`** — README menyebut `.env.example`, belum ada contoh khusus produksi.
-4. **`next.config.ts`** masih memuat `allowedDevOrigins` (dev-only) dan belum di-commit — perubahan lokal pemilik repo.
+1. **Pipeline deploy** — masih manual (build + recreate di host ini).
+2. **Verifikasi container** — `docker build`/`compose up` tidak dapat dijalankan di mesin pengembangan ini (Docker tidak terpasang; eksekusi `standalone server.js` di Windows gagal karena `EPERM` symlink pnpm). Healthcheck dan header perlu diverifikasi sekali di host deploy.
 
 ---
 
-## Verifikasi yang dijalankan
+## 4. Hardening keamanan & kualitas (13 November 2026)
 
-- `pnpm lint` → 0 error, 0 warning.
-- `pnpm build` → sukses, 19 rute (halaman publik statis/SSG, admin dinamis).
-- Browser: 320/360/390/768/1024/1440 px; cek overflow, ukuran tap target, font < 12 px, kontras computed, urutan Tab, perangkap fokus, Escape/klik luar.
-- Live: penanda build unik dicek via `curl` (mis. `Lihat detail paket`, `og.png`, `PALING POPULER` = 0 di home), bukan asumsi cache.
-- DB: query count/range diuji langsung dengan service role.
-- Sesi uji admin: user sementara dibuat → diverifikasi → dihapus (`leftover=false`).
+### CLEAR
 
-**Koreksi penting:** temuan awal “emoji 🐴 di title produksi” **dibatalkan** — itu artefak prefix tab di browser audit, bukan konten situs (HTML `curl` bersih).
+| # | Perubahan | Detail | File |
+|---|---|---|---|
+| H1 | Rate limit login | 5 percobaan / 15 menit per hash IP klien; limiter terpisah dari lead | `src/lib/rateLimit.ts`, `src/actions/auth.ts` |
+| H2 | CSP & header produksi | `unsafe-eval` hanya di development; tambah HSTS, `Permissions-Policy`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`; `X-Powered-By` dimatikan | `next.config.ts` |
+| H3 | Proxy hanya untuk admin | Matcher `/admin` + `/admin/:path*`; halaman publik tidak lagi memanggil Supabase Auth per request | `src/proxy.ts` |
+| H4 | Robustness input lead | Honeypot tidak lagi salah menolak field yang absen; status lead divalidasi enum sebelum update | `src/actions/leads.ts` |
+| H5 | Robustness fitur paket | `JSON.parse` dibungkus `try/catch` → pesan validasi, bukan error 500 | `src/actions/packages.ts` |
+| H6 | Query efisien | Ringkasan status memakai HEAD count per status; `getPackageBySlug` memfilter per segmen sehingga slug duplikat antar-segmen aman; `getAllSettings` (dead code, anon client) dihapus | `src/lib/queries/*` |
+| H7 | Unit test | 9 test `node:test` untuk `leadSchema` dan `normalizePricePrefix`; script `pnpm test` | `tests/unit/*`, `package.json` |
+| H8 | Tooling lokal | `node_modules` disinkronkan dengan pnpm 11.7.0; `allowImportingTsExtensions` untuk test | `tsconfig.json` |
+| H9 | Dokumen agen | `AGENTS.md` menjadi sumber aturan proyek (update Next 16); `CLAUDE.md` menjadi bridge `@AGENTS.md` | `AGENTS.md`, `CLAUDE.md` |
+
+### BLOCKED
+
+1. **Kolom consent** — migrasi `20261113000001_add_lead_consent_columns.sql` belum diterapkan ke database. Kode sudah menulis kolom baru dan otomatis fallback ke `admin_notes` bila kolom belum ada.
+2. **RLS fitur paket** — migrasi `20261113000002_restrict_package_features_read.sql` belum diterapkan. Setelah aktif, anon tidak bisa membaca fitur paket nonaktif (`is_active = false`); staff tetap melihat semua.
+
+### OPEN
+
+1. **Duplikasi skill Supabase** — `.agents/skills/supabase` dan `.claude/skills/supabase` identik byte-per-byte. Perlu keputusan sumber kanonik sebelum salah satu dihapus.
 
 ---
 
-## Riwayat commit terkait
+## 5. Verifikasi yang dijalankan
+
+- `pnpm lint` → **0 error, 0 warning**.
+- `pnpm exec tsc --noEmit` → **0 error**.
+- `pnpm test` → **9/9 lulus** (200–250 ms).
+- `pnpm build` → **sukses**, 19 rute; 8 halaman detail paket ter-prerender (SSG).
+- `next start` (port 3101) → HTTP 200 dengan header:
+  - CSP produksi **tanpa** `unsafe-eval`
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()`
+  - `X-Powered-By` tidak ada
+- Live `https://nusabackup.id` (13 Nov): 200 via Cloudflare, `/privasi` 200, `/admin` → 307 login, `og.png` 200, marker build terbaru ada.
+- Browser: audit terakhir 11 November (320/360/390/768/1024/1440 px, kontras computed, urutan Tab, focus trap, Escape/klik luar). Tidak diulang pada pass ini.
+- **Tidak dijalankan:** `docker build`/`docker compose` (Docker tidak tersedia di mesin ini), Lighthouse, dan screen reader nyata.
+
+---
+
+## 6. Perubahan pada pass ini (ringkas)
 
 ```
-65ca548 fix(admin): title dashboard pakai absolute agar template tidak dilewati
-0cd3983 feat(admin): pagination lead, label tabel, title per halaman, escape hatch 403
-ebccf63 feat(privacy,ui,admin): simpan bukti consent, normalisasi harga, aksesibilitas admin
-832e9ba feat(marketing,admin): kebijakan privasi + consent, ikon SVG, perbaikan admin
-3631297 feat(marketing): tautkan kartu ke detail paket dan pakai konteks segmen
-f493de8 fix(deploy): docker build gagal sehingga deploy tidak pernah ter-update
-f8d397c fix(ui): deskripsi kartu paket tampil utuh tanpa elipsis
-bd682ce fix(ui): perbaiki kontras, focus trap modal, dan hierarki CTA paket
+fix(git)        merge 9 commit remote + push 4 commit (working tree & histori konsisten)
+fix(deploy)     guard build args NEXT_PUBLIC_*, README --env-file, healthcheck, env contoh
+fix(queries)    getPackageBySlug per segmen; status summary pakai count; hapus dead code
+fix(security)   CSP produksi, HSTS, Permissions-Policy, proxy /admin, rate limit login
+fix(leads)      honeypot null-safe, validasi enum status, consent terstruktur + fallback
+fix(packages)   JSON.parse aman untuk data fitur
+test            unit test leadSchema + normalizePricePrefix (node:test)
+docs            AGENTS.md kanonik, CLAUDE.md bridge, audit.md diperbarui
 ```
 
-## Urutan perbaikan berikutnya (usulan)
+---
 
-1. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
-2. **Migrasi `consent_at`/`consent_version`** lalu pindahkan bukti consent dari `admin_notes`.
-3. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
-4. **Pagination diuji dengan data nyata** + `og:image` per segmen/paket.
-5. **Ops**: healthcheck + pipeline deploy, lalu Lighthouse & uji screen reader.
+## 7. Urutan perbaikan berikutnya (usulan)
+
+1. **Terapkan dua migrasi** (`supabase db push`), lalu regenerate `src/types/database.ts` dengan CLI. Tanpa langkah ini bukti consent tetap jatuh ke `admin_notes` dan RLS fitur paket belum berubah.
+2. **Deploy build baru** di homelab dengan `docker compose --env-file .env.production up -d --build`, lalu cek healthcheck dan header di domain live.
+3. **Materi social proof** + finalisasi kebijakan privasi (konten, dampak konversi & kepatuhan).
+4. **Uji end-to-end detail lead** dengan akun admin + tambah audit log CMS.
+5. **Lighthouse & uji screen reader**, lalu pagination dengan data lead nyata.
+6. **Putuskan konsolidasi skill** Supabase (`.agents` vs `.claude`).
+7. **Pipeline deploy** otomatis (build + recreate) bila deploy manual mulai sering.
